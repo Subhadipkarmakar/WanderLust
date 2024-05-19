@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const initdata = require("./data.js");
 
-const mongoUri = process.env.MONGO_URI;
+const mongoUri = 'mongodb://127.0.0.1:27017/wonderlust';
 
 const listing = require("../models/listing.js");
 mongoose.connect(mongoUri)
