@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-
 const imageSchema = new Schema({
     filename: {
         type: String,
@@ -14,7 +13,6 @@ const imageSchema = new Schema({
             : v,
     }
 }, { _id: false });
-
 const listingSchema = new Schema({
     title: {
         type: String,
@@ -23,8 +21,8 @@ const listingSchema = new Schema({
     description: String,
     country: String,
     image: {
-        type: imageSchema,
-        required: false
+    type:imageSchema,
+    required: false
     },
     price: String,
     location: String

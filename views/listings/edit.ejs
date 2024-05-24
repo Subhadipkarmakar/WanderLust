@@ -1,5 +1,5 @@
 <h3>edit the listings</h3>
-<form method="post" action="/listings/<%= listing._id %>?_method=PUT" >
+<form method="put" action="/listings/<%= listing._id %>?_method=PUT" >
     <input name="listing[title]" value="<%= listing.title %>" type="text">
     <br> <br>
      <textarea name="listing[description]" ><%= listing.description %></textarea>
