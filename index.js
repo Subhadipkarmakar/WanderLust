@@ -35,22 +35,39 @@ app.get("/listings",async(req,res)=>{
    const alllisting= await Listing.find({})
    res.render('listings/mongo', { alllisting: alllisting });
 });
+//NEW ROUTE
 app.get("/listings/new",(req,res)=>{
     res.render("listings/new.ejs")
 })
+app.post("/listings", async (req, res) => {
+  try {
+    const { title, description, country, image, location, price } = req.body.listing;
+    const newListing = new Listing({
+      title,
+      description,
+      country,
+      image: { url: image },
+      location,
+      price
+    });
+
+    await newListing.save();
+    res.redirect("/listings");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 //view_route
 app.get("/listings/:id",async (req,res)=>{
     let {id}=req.params;
     const listing=await Listing.findById(id);
     res.render("listings/show.ejs",{listing});
 })
-//post
-app.post("/listings",async (req,res)=>{
-    const newlisting = new Listing(req.body.listing);
-    await newlisting.save();
-   res.redirect("/listings");
 
-});
+
+
 //edit route
 app.get("/listings/:id/edit",async(req,res)=>{
     let {id}=req.params;
@@ -58,12 +75,26 @@ app.get("/listings/:id/edit",async(req,res)=>{
     res.render("listings/edit.ejs",{listing});
 })
 //update route
-app.put("/listings/:id", async(req,res)=>{
+app.put('/listings/:id', async (req, res) => {
+    try {
+      const { title, description, country, image, location, price } = req.body.listing;
+      const updatedListing = await Listing.findByIdAndUpdate(
+        req.params.id,
+        { title, description, country, image: { url: image }, location, price },
+        { new: true, runValidators: true }
+      );
+      res.redirect(`/listings/${updatedListing._id}`);
+    } catch (error) {
+      res.status(500).send(error.message);
+    }
+  });
+
+  app.delete("/listings/:id",async(req,res)=>{
     let {id}=req.params;
-   let updatedlisting=await Listing.findByIdAndUpdate(id, {...req.body.listing});
-   console.log(updatedlisting);
-   res.redirect("/listings")
-})
+    let deletedlisting= await Listing.findByIdAndDelete(id);
+    console.log(deletedlisting);
+    res.redirect("/listings")
+  })
 app.listen(port, () => {
     console.log(`app is lisening ${port}`);
-})
+});
