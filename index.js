@@ -9,12 +9,15 @@ const methodOverride=require("method-override")
 const initdb = require("./init/mongo");
 const path=require("path");
 const { log } = require('console');
+const ejsMate=require("ejs-mate");
 
 app.set("view engine", "ejs");
 app.set("views",path.join(__dirname,"views"))
 const port = 8080;
 app.use(express.urlencoded({extended:true}))
 app.use(methodOverride("_method"));
+app.use(express.static(path.join(__dirname,"/public")));
+app.engine('ejs', ejsMate);
 app.get("/", (req, res) => {
     res.send("hiii i am root")
 })
