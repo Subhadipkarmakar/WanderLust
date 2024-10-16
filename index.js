@@ -10,7 +10,7 @@ const initdb = require("./init/mongo");
 const path=require("path");
 const { log } = require('console');
 const ejsMate=require("ejs-mate");
-
+const Review = require("./models/review");
 app.set("view engine", "ejs");
 app.set("views",path.join(__dirname,"views"))
 const port = 8080;
@@ -42,7 +42,7 @@ app.get("/listings",async(req,res)=>{
 app.get("/listings/new",(req,res)=>{
     res.render("listings/new.ejs")
 })
-app.post("/listings", async (req, res) => {
+app.post("/listings", async (req, res,next) => {
   try {
     const { title, description, country, image, location, price } = req.body.listing;
     const newListing = new Listing({
@@ -57,18 +57,20 @@ app.post("/listings", async (req, res) => {
     await newListing.save();
     res.redirect("/listings");
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
+    next(error)
   }
 });
 
 //view_route
-app.get("/listings/:id",async (req,res)=>{
-    let {id}=req.params;
-    const listing=await Listing.findById(id);
-    res.render("listings/show.ejs",{listing});
-})
+const Review = mongoose.model('Review', reviewSchema);
+const Listing = mongoose.model('Listing', listingSchema);
 
+// Route to get listing by ID
+app.get("/listings/:id",async (req,res)=>{
+  let {id}=req.params;
+  const listing=await Listing.findById(id).populate("reviews");
+  res.render("listings/show.ejs",{listing});
+})
 
 
 //edit route
@@ -97,7 +99,26 @@ app.put('/listings/:id', async (req, res) => {
     let deletedlisting= await Listing.findByIdAndDelete(id);
     console.log(deletedlisting);
     res.redirect("/listings")
+  });
+ app.post("/listings/:id/reviews",async(req,res)=>{
+   let listing=await Listing.findById(req.params.id)
+   let newReview= new Review(req.body.review)
+   listing.reviews.push(newReview);
+
+    await newReview.save();
+    await listing.save();
+
+    console.log("new review saved");
+    res.redirect(`/listings/${listing._id}`)
+ }) 
+
+
+
+  app.use((error,req,res,next)=>{
+    res.send("something went wrong!")
   })
 app.listen(port, () => {
     console.log(`app is lisening ${port}`);
 });
+
+
