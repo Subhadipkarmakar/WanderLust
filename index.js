@@ -1,3 +1,4 @@
+
 require('dotenv/config');
 
 const express = require("express");
@@ -5,25 +6,28 @@ const app = express();
 
 const mongoose = require('mongoose');
 const Listing = require("./models/listing");
-const methodOverride=require("method-override")
+const methodOverride = require("method-override");
 const initdb = require("./init/mongo");
-const path=require("path");
+const path = require("path");
 const { log } = require('console');
-const ejsMate=require("ejs-mate");
-const Review = require("./models/review");
+const ejsMate = require("ejs-mate");
+const Review = require("./models/review");  // You already imported Review here
+
 app.set("view engine", "ejs");
-app.set("views",path.join(__dirname,"views"))
+app.set("views", path.join(__dirname, "views"));
 const port = 8080;
-app.use(express.urlencoded({extended:true}))
+
+app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
-app.use(express.static(path.join(__dirname,"/public")));
+app.use(express.static(path.join(__dirname, "/public")));
 app.engine('ejs', ejsMate);
+
 app.get("/", (req, res) => {
     res.send("hiii i am root")
-})
+});
 
 app.get("/testlisting", async (req, res) => {
-    let samplelisting = new listing({
+    let samplelisting = new Listing({
         title: "my new villa",
         description: "by the sea",
         country: "china",
@@ -32,93 +36,106 @@ app.get("/testlisting", async (req, res) => {
     const dbResponse = await samplelisting.save();
     console.log(dbResponse);
     res.send("succesfully testing")
-})
-//index_route
-app.get("/listings",async(req,res)=>{
-   const alllisting= await Listing.find({})
-   res.render('listings/mongo', { alllisting: alllisting });
-});
-//NEW ROUTE
-app.get("/listings/new",(req,res)=>{
-    res.render("listings/new.ejs")
-})
-app.post("/listings", async (req, res,next) => {
-  try {
-    const { title, description, country, image, location, price } = req.body.listing;
-    const newListing = new Listing({
-      title,
-      description,
-      country,
-      image: { url: image },
-      location,
-      price
-    });
-
-    await newListing.save();
-    res.redirect("/listings");
-  } catch (error) {
-    next(error)
-  }
 });
 
-//view_route
-const Review = mongoose.model('Review', reviewSchema);
-const Listing = mongoose.model('Listing', listingSchema);
+// index_route
+app.get("/listings", async (req, res) => {
+    const alllisting = await Listing.find({});
+    res.render('listings/mongo', { alllisting: alllisting });
+});
+
+// NEW ROUTE
+app.get("/listings/new", (req, res) => {
+    res.render("listings/new.ejs");
+});
+
+app.post("/listings", async (req, res, next) => {
+    try {
+        const { title, description, country, image, location, price } = req.body.listing;
+        const newListing = new Listing({
+            title,
+            description,
+            country,
+            image: { url: image },
+            location,
+            price
+        });
+
+        await newListing.save();
+        res.redirect("/listings");
+    } catch (error) {
+        next(error);
+    }
+});
 
 // Route to get listing by ID
-app.get("/listings/:id",async (req,res)=>{
-  let {id}=req.params;
-  const listing=await Listing.findById(id).populate("reviews");
-  res.render("listings/show.ejs",{listing});
-})
+app.get("/listings/:id", async (req, res) => {
+    let { id } = req.params;
+    const listing = await Listing.findById(id).populate("reviews");
+    res.render("listings/show.ejs", { listing });
+});
 
+// Edit route
+app.get("/listings/:id/edit", async (req, res) => {
+    let { id } = req.params;
+    const listing = await Listing.findById(id);
+    res.render("listings/edit.ejs", { listing });
+});
 
-//edit route
-app.get("/listings/:id/edit",async(req,res)=>{
-    let {id}=req.params;
-    const listing=await Listing.findById(id);
-    res.render("listings/edit.ejs",{listing});
-})
-//update route
+// Update route
 app.put('/listings/:id', async (req, res) => {
     try {
-      const { title, description, country, image, location, price } = req.body.listing;
-      const updatedListing = await Listing.findByIdAndUpdate(
-        req.params.id,
-        { title, description, country, image: { url: image }, location, price },
-        { new: true, runValidators: true }
-      );
-      res.redirect(`/listings/${updatedListing._id}`);
+        const { title, description, country, image, location, price } = req.body.listing;
+        const updatedListing = await Listing.findByIdAndUpdate(
+            req.params.id,
+            { title, description, country, image: { url: image }, location, price },
+            { new: true, runValidators: true }
+        );
+        res.redirect(`/listings/${updatedListing._id}`);
     } catch (error) {
-      res.status(500).send(error.message);
+        res.status(500).send(error.message);
     }
-  });
+});
 
-  app.delete("/listings/:id",async(req,res)=>{
-    let {id}=req.params;
-    let deletedlisting= await Listing.findByIdAndDelete(id);
+// Delete route
+app.delete("/listings/:id", async (req, res) => {
+    let { id } = req.params;
+    let deletedlisting = await Listing.findByIdAndDelete(id);
     console.log(deletedlisting);
-    res.redirect("/listings")
-  });
- app.post("/listings/:id/reviews",async(req,res)=>{
-   let listing=await Listing.findById(req.params.id)
-   let newReview= new Review(req.body.review)
-   listing.reviews.push(newReview);
+    res.redirect("/listings");
+});
+
+// Adding reviews to a listing
+app.post("/listings/:id/reviews", async (req, res) => {
+  try {
+    const listing = await Listing.findById(req.params.id);
+
+    // Create a new review with the author field
+    const newReview = new Review({
+      ...req.body.review, // Get the review data (rating, comment) from the form
+    //   author: req.body.review.author  // Ensure author is passed from the form
+    });
+
+    listing.reviews.push(newReview);
 
     await newReview.save();
     await listing.save();
 
-    console.log("new review saved");
-    res.redirect(`/listings/${listing._id}`)
- }) 
-
-
-
-  app.use((error,req,res,next)=>{
-    res.send("something went wrong!")
-  })
-app.listen(port, () => {
-    console.log(`app is lisening ${port}`);
+    console.log("New review saved");
+    res.redirect(`/listings/${listing._id}`);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error.message);
+  }
 });
 
 
+app.use((error, req, res, next) => {
+  console.error(error); // Log the error for debugging
+  res.status(500).send("Something went wrong!"); // Send a generic error message
+});
+
+
+app.listen(port, () => {
+    console.log(`app is listening on port ${port}`);
+});
