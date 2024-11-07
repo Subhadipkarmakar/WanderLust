@@ -1,55 +1,69 @@
-
 require('dotenv/config');
-
 const express = require("express");
-const app = express();
-
 const mongoose = require('mongoose');
-const Listing = require("./models/listing");
-const methodOverride = require("method-override");
 const initdb = require("./init/mongo");
+const methodOverride = require("method-override");
 const path = require("path");
-const { log } = require('console');
+const session = require("express-session");
+const flash = require("connect-flash");
 const ejsMate = require("ejs-mate");
-const Review = require("./models/review");  // You already imported Review here
+const Listing = require("./models/listing");
+const Review = require("./models/review");
 
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
+const app = express();
 const port = 8080;
 
+// Middleware configuration
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.engine('ejs', ejsMate);
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "/public")));
-app.engine('ejs', ejsMate);
 
+// Configure session middleware for flash messages
+app.use(
+    session({
+        secret: "yourSecretKey", // Replace with a strong secret key
+        resave: false,
+        saveUninitialized: true,
+        cookie: { secure: false } // Set to true if using HTTPS
+    })
+);
+app.use(flash());
+
+// Flash message middleware
+app.use((req, res, next) => {
+    res.locals.success = req.flash("success");
+    res.locals.error = req.flash("error");
+    next();
+});
+
+// // MongoDB connection setup
+// mongoose.connect('mongodb://127.0.0.1:27017/listingsDB', {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+// })
+//     .then(() => console.log("Connected to MongoDB"))
+//     .catch((error) => console.log("MongoDB connection error:", error));
+
+// Routes and handlers
 app.get("/", (req, res) => {
-    res.send("hiii i am root")
+    res.send("Welcome to the Listings app!");
 });
-
-app.get("/testlisting", async (req, res) => {
-    let samplelisting = new Listing({
-        title: "my new villa",
-        description: "by the sea",
-        country: "china",
-        price: 1200
-    });
-    const dbResponse = await samplelisting.save();
-    console.log(dbResponse);
-    res.send("succesfully testing")
-});
-
-// index_route
 app.get("/listings", async (req, res) => {
     const alllisting = await Listing.find({});
-    res.render('listings/mongo', { alllisting: alllisting });
+    console.log(alllisting);
+    
+    res.render('listings/mongo', { alllisting });
 });
 
-// NEW ROUTE
+
 app.get("/listings/new", (req, res) => {
-    res.render("listings/new.ejs");
+    res.render("listings/new");
 });
 
-app.post("/listings", async (req, res, next) => {
+app.post("/listings", async (req, res) => {
     try {
         const { title, description, country, image, location, price } = req.body.listing;
         const newListing = new Listing({
@@ -60,82 +74,86 @@ app.post("/listings", async (req, res, next) => {
             location,
             price
         });
-
         await newListing.save();
+        req.flash("success", "New listing created");
         res.redirect("/listings");
     } catch (error) {
-        next(error);
+        console.error(error);
+        res.status(500).send("Error creating listing");
     }
 });
 
-// Route to get listing by ID
 app.get("/listings/:id", async (req, res) => {
-    let { id } = req.params;
-    const listing = await Listing.findById(id).populate("reviews");
-    res.render("listings/show.ejs", { listing });
+    try {
+        const listing = await Listing.findById(req.params.id).populate("reviews");
+        res.render("listings/show", { listing });
+    } catch (error) {
+        console.error(error);
+        res.status(404).send("Listing not found");
+    }
 });
 
-// Edit route
 app.get("/listings/:id/edit", async (req, res) => {
-    let { id } = req.params;
-    const listing = await Listing.findById(id);
-    res.render("listings/edit.ejs", { listing });
+    try {
+        const listing = await Listing.findById(req.params.id);
+        res.render("listings/edit", { listing });
+    } catch (error) {
+        console.error(error);
+        res.status(404).send("Listing not found");
+    }
 });
 
-// Update route
 app.put('/listings/:id', async (req, res) => {
     try {
         const { title, description, country, image, location, price } = req.body.listing;
-        const updatedListing = await Listing.findByIdAndUpdate(
+        await Listing.findByIdAndUpdate(
             req.params.id,
             { title, description, country, image: { url: image }, location, price },
             { new: true, runValidators: true }
         );
-        res.redirect(`/listings/${updatedListing._id}`);
+        req.flash("success", "Listing updated");
+        res.redirect(`/listings/${req.params.id}`);
     } catch (error) {
-        res.status(500).send(error.message);
+        console.error(error);
+        res.status(500).send("Error updating listing");
     }
 });
 
-// Delete route
 app.delete("/listings/:id", async (req, res) => {
-    let { id } = req.params;
-    let deletedlisting = await Listing.findByIdAndDelete(id);
-    console.log(deletedlisting);
-    res.redirect("/listings");
+    try {
+        await Listing.findByIdAndDelete(req.params.id);
+        req.flash("success", "Listing deleted");
+        res.redirect("/listings");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error deleting listing");
+    }
 });
 
-// Adding reviews to a listing
 app.post("/listings/:id/reviews", async (req, res) => {
-  try {
-    const listing = await Listing.findById(req.params.id);
-
-    // Create a new review with the author field
-    const newReview = new Review({
-      ...req.body.review, // Get the review data (rating, comment) from the form
-    //   author: req.body.review.author  // Ensure author is passed from the form
-    });
-
-    listing.reviews.push(newReview);
-
-    await newReview.save();
-    await listing.save();
-
-    console.log("New review saved");
-    res.redirect(`/listings/${listing._id}`);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(error.message);
-  }
+    try {
+        const listing = await Listing.findById(req.params.id);
+        const newReview = new Review({
+            rating: req.body.review.rating,
+            comment: req.body.review.comment
+        });
+        listing.reviews.push(newReview);
+        await newReview.save();
+        await listing.save();
+        req.flash("success", "Review added");
+        res.redirect(`/listings/${listing._id}`);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error adding review");
+    }
 });
-
 
 app.use((error, req, res, next) => {
-  console.error(error); // Log the error for debugging
-  res.status(500).send("Something went wrong!"); // Send a generic error message
+    console.error("Error:", error);
+    res.status(500).send("Something went wrong!");
 });
-
 
 app.listen(port, () => {
-    console.log(`app is listening on port ${port}`);
+    console.log(`App is listening on port ${port}`);
 });
+
