@@ -9,6 +9,9 @@ const flash = require("connect-flash");
 const ejsMate = require("ejs-mate");
 const Listing = require("./models/listing");
 const Review = require("./models/review");
+const passport=require("passport");
+const LocalStrategy=require("passport-local");
+const User=require("./models/user.js");
 
 const app = express();
 const port = 8080;
@@ -32,6 +35,16 @@ app.use(
 );
 app.use(flash());
 
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+
 // Flash message middleware
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
@@ -39,6 +52,16 @@ app.use((req, res, next) => {
     next();
 });
 
+
+app.get("/demouser", async (req,res)=>{
+    let fakeuser= new User({
+        email:"student@gmail.com",
+        username:"delta-user",
+    });
+
+    let RegisteredUser= await User.register(fakeuser,"halloworld");
+    res.send(RegisteredUser);
+})
 // // MongoDB connection setup
 // mongoose.connect('mongodb://127.0.0.1:27017/listingsDB', {
 //     useNewUrlParser: true,
@@ -53,7 +76,7 @@ app.get("/", (req, res) => {
 });
 app.get("/listings", async (req, res) => {
     const alllisting = await Listing.find({});
-    console.log(alllisting);
+    //console.log(alllisting);
     
     res.render('listings/mongo', { alllisting });
 });
@@ -148,6 +171,75 @@ app.post("/listings/:id/reviews", async (req, res) => {
     }
 });
 
+// //delete review
+// app.delete("/listings/:id/reviews/reviewId", async(req,res)=>{
+//     let{id,reviewId}=req.params;
+//     await Listing.findByIdAndUpdate(id,{$pull:{reviews:reviewId}});
+//     await Review.findByIdAndDelete(reviewId);
+//     res.redirect(`/listings/${id}`)
+// });
+app.delete("/listings/:id/reviews/:reviewId", async (req, res) => {
+    let { id, reviewId } = req.params;
+  
+    try {
+      // Remove the reviewId from the listing's reviews array
+      const listing = await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } }, { new: true });
+  
+      // Check if the listing was found and updated
+      if (!listing) {
+        return res.status(404).send("Listing not found");
+      }
+  
+      // Delete the review
+      const review = await Review.findByIdAndDelete(reviewId);
+  
+      // Check if the review was found and deleted
+      if (!review) {
+        return res.status(404).send("Review not found");
+      }
+      req.flash("success", "Review removed");
+      // Redirect to the listing page
+      res.redirect(`/listings/${id}`);
+    } catch (error) {
+      // Handle any errors that occur
+      console.error(error);
+      res.status(500).send("An error occurred while deleting the review");
+    }
+  });
+  
+
+   app.get("/signup",(req,res)=>{
+    res.render("users/signup.ejs")
+   });
+
+   app.post("/signup", async (req,res)=>{
+    try{
+        let {username,email,password}=req.body;
+    const newUser= new User({email,username});
+    const registeredUser=await User.register(newUser,password);
+    console.log(registeredUser);
+    req.flash("success","welcome to the Wonderlust");
+    res.redirect("/listings");
+    }
+    catch(e){
+        req.flash("error", e.massage);
+        res.redirect("/signup");
+    }
+   });
+
+
+   app.get("/login",(req,res)=>{
+    res.render("users/login.ejs");
+   });
+
+   app.post('/login', 
+    passport.authenticate('local', { failureRedirect: '/login',failureFlash:true, }),
+    async(req, res)=> {
+      req.flash("success","welcome back to the wonderlust");
+      res.redirect("/listings")
+    });
+
+  
 app.use((error, req, res, next) => {
     console.error("Error:", error);
     res.status(500).send("Something went wrong!");
@@ -156,4 +248,5 @@ app.use((error, req, res, next) => {
 app.listen(port, () => {
     console.log(`App is listening on port ${port}`);
 });
+
 
