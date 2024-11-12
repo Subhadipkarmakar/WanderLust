@@ -13,7 +13,7 @@ const passport=require("passport");
 const LocalStrategy=require("passport-local");
 const User=require("./models/user.js");
 const { log } = require('console');
-const {isLoggedin}= require("../Project1/views/Midilware.js");
+const {isLoggedin, saveRedirectUrl}= require("../Project1/views/Midilware.js");
 
 const app = express();
 const port = 8080;
@@ -51,6 +51,7 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
+    res.locals.curruser=req.user;
     next();
 });
 
@@ -215,14 +216,20 @@ app.delete("/listings/:id/reviews/:reviewId", async (req, res) => {
     res.render("users/signup.ejs")
    });
 
-   app.post("/signup", async (req,res)=>{
+   app.post("/signup", async (req,res,next)=>{
     try{
         let {username,email,password}=req.body;
     const newUser= new User({email,username});
     const registeredUser=await User.register(newUser,password);
     console.log(registeredUser);
-    req.flash("success","welcome to the Wonderlust");
+    req.logIn(registeredUser,(err)=>{
+        if(err){
+            return next(err);
+        }
+        req.flash("success","welcome to the Wonderlust");
     res.redirect("/listings");
+    })
+    
     }
     catch(e){
         req.flash("error", e.massage);
@@ -235,11 +242,13 @@ app.delete("/listings/:id/reviews/:reviewId", async (req, res) => {
     res.render("users/login.ejs");
    });
 
-   app.post('/login', 
+   app.post('/login', saveRedirectUrl,
     passport.authenticate('local', { failureRedirect: '/login',failureFlash:true, }),
     async(req, res)=> {
       req.flash("success","welcome back to the wonderlust");
-      res.redirect("/listings")
+      let redirectUrl=res.locals.redirectUrl || "/listings"
+    
+      res.redirect(redirectUrl);
     });
 
     app.get("/logout",(req,res,next)=>{

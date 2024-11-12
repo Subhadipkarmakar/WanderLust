@@ -12,10 +12,12 @@
           
         </div>
         <div class="navbar-nav ms-auto">
+          <% if(!curruser) { %>
           <a class="nav-link"  href="/signup">Signup</a>
           <a class="nav-link" href="/login">Login</a>
+          <% } %> <%if(curruser) { %>
           <a class="nav-link" href="/logout">Logout</a>
-          
+          <% } %>
         </div>
       </div>
     </div>
