@@ -12,6 +12,8 @@ const Review = require("./models/review");
 const passport=require("passport");
 const LocalStrategy=require("passport-local");
 const User=require("./models/user.js");
+const { log } = require('console');
+const {isLoggedin}= require("../Project1/views/Midilware.js");
 
 const app = express();
 const port = 8080;
@@ -82,7 +84,8 @@ app.get("/listings", async (req, res) => {
 });
 
 
-app.get("/listings/new", (req, res) => {
+app.get("/listings/new",isLoggedin, (req, res) => {
+
     res.render("listings/new");
 });
 
@@ -116,7 +119,7 @@ app.get("/listings/:id", async (req, res) => {
     }
 });
 
-app.get("/listings/:id/edit", async (req, res) => {
+app.get("/listings/:id/edit", isLoggedin,async (req, res) => {
     try {
         const listing = await Listing.findById(req.params.id);
         res.render("listings/edit", { listing });
@@ -142,7 +145,7 @@ app.put('/listings/:id', async (req, res) => {
     }
 });
 
-app.delete("/listings/:id", async (req, res) => {
+app.delete("/listings/:id",isLoggedin, async (req, res) => {
     try {
         await Listing.findByIdAndDelete(req.params.id);
         req.flash("success", "Listing deleted");
@@ -238,6 +241,16 @@ app.delete("/listings/:id/reviews/:reviewId", async (req, res) => {
       req.flash("success","welcome back to the wonderlust");
       res.redirect("/listings")
     });
+
+    app.get("/logout",(req,res,next)=>{
+      req.logOut((err)=>{
+       if(err){
+        next(err);
+       }
+       req.flash("success","you are logged out !");
+       res.redirect("/listings");
+      })  
+      })
 
   
 app.use((error, req, res, next) => {
