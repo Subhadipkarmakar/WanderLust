@@ -1,0 +1,49 @@
+<% layout("/layouts/boilarplate") %>
+<body>
+    <div class="row mt-3">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4>Booking Confirmed!</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success mb-4">
+                        <h5 class="alert-heading">Thank you for your booking!</h5>
+                        <p>Your reservation has been confirmed. We've sent a confirmation email with all the details.</p>
+                    </div>
+                    
+                    <h5>Booking Details</h5>
+                    <hr>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <img src="<%= booking.listing.image.url %>" alt="<%= booking.listing.title %>" class="img-fluid rounded">
+                        </div>
+                        <div class="col-md-8">
+                            <h5><%= booking.listing.title %></h5>
+                            <p><i class="fa-solid fa-location-dot"></i> <%= booking.listing.location %>, <%= booking.listing.country %></p>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <p><strong>Check-in:</strong><br> <%= booking.checkIn.toLocaleDateString() %></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Check-out:</strong><br> <%= booking.checkOut.toLocaleDateString() %></p>
+                                </div>
+                            </div>
+                            
+                            <p><strong>Guests:</strong> <%= booking.guests %></p>
+                            <p><strong>Total Price:</strong> ₹<%= booking.totalPrice %></p>
+                            <p><strong>Booking Status:</strong> <span class="badge bg-success">Confirmed</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="/bookings" class="btn btn-outline-primary">View All Bookings</a>
+                        <a href="/listings" class="btn btn-primary">Continue Browsing</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>

@@ -1,0 +1,92 @@
+/* Booking Form Styles */
+.booking-card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 0.5rem;
+}
+
+.booking-card .card-header {
+    background-color: #fe424d;
+    color: white;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+}
+
+.price-details {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.booking-btn {
+    background-color: #fe424d;
+    border: none;
+}
+
+.booking-btn:hover {
+    background-color: #e63b46;
+}
+
+/* Date picker styling */
+input[type="date"] {
+    cursor: pointer;
+}
+
+/* Booking confirmation styles */
+.confirmation-header {
+    background-color: #28a745;
+    color: white;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+}
+
+.booking-details {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.booking-details-label {
+    font-weight: bold;
+    color: #555;
+}
+
+/* Booking list styles */
+.booking-list-item {
+    transition: transform 0.2s;
+    margin-bottom: 1rem;
+}
+
+.booking-list-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.booking-status {
+    font-weight: bold;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+.status-confirmed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-cancelled {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .booking-image {
+        max-height: 200px;
+        object-fit: cover;
+    }
+}

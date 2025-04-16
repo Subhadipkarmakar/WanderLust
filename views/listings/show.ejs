@@ -7,22 +7,29 @@
         <img src="<%= listing.image.url %>" class="card-img-top show-img" alt="listing_image">
         <div class="card-body">
             <p class="card-text">
-
                 <br>
                 <%= listing.description %> <br>
-                &#8377; <%= listing.price %> <br>
-                <%= listing.location %> <br>
-                <%= listing.country %> <br>
+                <strong>Price:</strong> &#8377; <%= listing.price %> per night<br>
+                <strong>Location:</strong> <%= listing.location %>, <%= listing.country %> <br>
+                <% if(listing.category) { %>
+                <strong>Category:</strong> <%= listing.category %> <br>
+                <% } %>
             </p>
+            
+            <div class="d-grid gap-2 mt-4">
+                <a href="/listings/<%= listing._id %>/book" class="btn btn-success">Book Now</a>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="btns">
-    <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark col-1 offset-3 edit-btn">Edit</a>
-    <form action="/listings/<%= listing._id %>?_method=DELETE" method="post" novalidate class="needs-validation">
-        <button class="btn btn-dark offset-5">Delete</button>
-    </form> 
+<div class="btns mt-3">
+    <% if(curruser && listing.owner && curruser._id.equals(listing.owner._id)) { %>
+        <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark col-1 offset-3 edit-btn">Edit</a>
+        <form action="/listings/<%= listing._id %>?_method=DELETE" method="post" novalidate class="needs-validation">
+            <button class="btn btn-dark offset-5">Delete</button>
+        </form>
+    <% } %>
 </div>
 <br>
 

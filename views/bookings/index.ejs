@@ -1,0 +1,70 @@
+<% layout("/layouts/boilarplate") %>
+<body>
+    <div class="container mt-4">
+        <h2>My Bookings</h2>
+        
+        <% if (bookings.length === 0) { %>
+            <div class="alert alert-info mt-4">
+                <p>You don't have any bookings yet.</p>
+                <a href="/listings" class="btn btn-primary mt-2">Browse Listings</a>
+            </div>
+        <% } else { %>
+            <div class="row mt-4">
+                <% bookings.forEach(booking => { %>
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="row g-0">
+                                <div class="col-md-4">
+                                    <img src="<%= booking.listing.image.url %>" class="img-fluid rounded-start h-100" alt="<%= booking.listing.title %>" style="object-fit: cover;">
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><%= booking.listing.title %></h5>
+                                        <p class="card-text">
+                                            <small class="text-muted">
+                                                <i class="fa-solid fa-location-dot"></i> 
+                                                <%= booking.listing.location %>, <%= booking.listing.country %>
+                                            </small>
+                                        </p>
+                                        
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Check-in:</span>
+                                            <span><%= booking.checkIn.toLocaleDateString() %></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Check-out:</span>
+                                            <span><%= booking.checkOut.toLocaleDateString() %></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Guests:</span>
+                                            <span><%= booking.guests %></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Total:</span>
+                                            <span>₹<%= booking.totalPrice %></span>
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
+                                            <span class="badge <%= booking.status === 'confirmed' ? 'bg-success' : booking.status === 'cancelled' ? 'bg-danger' : 'bg-warning' %>">
+                                                <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
+                                            </span>
+                                            
+                                            <div>
+                                                <a href="/bookings/<%= booking._id %>" class="btn btn-sm btn-outline-primary">View</a>
+                                                <% if (booking.status !== 'cancelled') { %>
+                                                    <form class="d-inline" action="/bookings/<%= booking._id %>/cancel" method="POST">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                                    </form>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+    </div>
+</body>

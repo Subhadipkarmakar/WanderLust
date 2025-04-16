@@ -9,6 +9,7 @@ const flash = require("connect-flash");
 const ejsMate = require("ejs-mate");
 const Listing = require("./models/listing");
 const Review = require("./models/review");
+const Booking = require("./models/booking");
 const passport=require("passport");
 const LocalStrategy=require("passport-local");
 const User=require("./models/user.js");
@@ -122,6 +123,129 @@ app.get("/listings/search", async (req, res) => {
         console.error("Search error:", err);
         req.flash("error", "An error occurred during search");
         res.redirect("/listings");
+    }
+});
+
+// Booking Routes
+// Show booking form
+app.get("/listings/:id/book", isLoggedin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const listing = await Listing.findById(id);
+        
+        if (!listing) {
+            req.flash("error", "Listing not found");
+            return res.redirect("/listings");
+        }
+        
+        res.render("bookings/new", { listing });
+    } catch (err) {
+        console.error("Error showing booking form:", err);
+        req.flash("error", "Something went wrong");
+        res.redirect("/listings");
+    }
+});
+
+// Create new booking
+app.post("/bookings", isLoggedin, async (req, res) => {
+    try {
+        const { listingId, checkIn, checkOut, guests, totalPrice } = req.body;
+        
+        // Ensure totalPrice is a valid number
+        let parsedTotalPrice = totalPrice;
+        if (typeof totalPrice === 'string') {
+            // Remove any non-numeric characters (like currency symbols)
+            parsedTotalPrice = parseInt(totalPrice.replace(/[^\d]/g, ''), 10);
+        }
+        
+        // Create new booking
+        const newBooking = new Booking({
+            listing: listingId,
+            user: req.user._id,
+            checkIn: new Date(checkIn),
+            checkOut: new Date(checkOut),
+            guests: parseInt(guests),
+            totalPrice: parsedTotalPrice,
+            status: "confirmed" // Auto-confirm for now
+        });
+        
+        await newBooking.save();
+        
+        // Populate listing details for the confirmation page
+        const booking = await Booking.findById(newBooking._id).populate("listing");
+        
+        req.flash("success", "Booking confirmed successfully!");
+        res.redirect(`/bookings/${newBooking._id}`);
+    } catch (err) {
+        console.error("Error creating booking:", err);
+        req.flash("error", "Failed to create booking");
+        res.redirect("/listings");
+    }
+});
+
+// View a specific booking
+app.get("/bookings/:id", isLoggedin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const booking = await Booking.findById(id).populate("listing");
+        
+        if (!booking) {
+            req.flash("error", "Booking not found");
+            return res.redirect("/bookings");
+        }
+        
+        // Check if the booking belongs to the current user
+        if (!booking.user.equals(req.user._id)) {
+            req.flash("error", "You don't have permission to view this booking");
+            return res.redirect("/bookings");
+        }
+        
+        res.render("bookings/show", { booking });
+    } catch (err) {
+        console.error("Error viewing booking:", err);
+        req.flash("error", "Something went wrong");
+        res.redirect("/bookings");
+    }
+});
+
+// View all user bookings
+app.get("/bookings", isLoggedin, async (req, res) => {
+    try {
+        const bookings = await Booking.find({ user: req.user._id }).populate("listing").sort({ createdAt: -1 });
+        res.render("bookings/index", { bookings });
+    } catch (err) {
+        console.error("Error fetching bookings:", err);
+        req.flash("error", "Failed to load bookings");
+        res.redirect("/listings");
+    }
+});
+
+// Cancel a booking
+app.post("/bookings/:id/cancel", isLoggedin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const booking = await Booking.findById(id);
+        
+        if (!booking) {
+            req.flash("error", "Booking not found");
+            return res.redirect("/bookings");
+        }
+        
+        // Check if the booking belongs to the current user
+        if (!booking.user.equals(req.user._id)) {
+            req.flash("error", "You don't have permission to cancel this booking");
+            return res.redirect("/bookings");
+        }
+        
+        booking.status = "cancelled";
+        await booking.save();
+        
+        req.flash("success", "Booking cancelled successfully");
+        res.redirect("/bookings");
+    } catch (err) {
+        console.error("Error cancelling booking:", err);
+        req.flash("error", "Failed to cancel booking");
+        res.redirect("/bookings");
     }
 });
 
