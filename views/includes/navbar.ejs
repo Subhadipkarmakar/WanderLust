@@ -1,42 +1,217 @@
  <style>
-  .btn-search i {
-display: inline;
-margin-right: 0.5rem;
-  }
-  .btn-search{
-    background-color: #fe424d;
+  /* Search button styling */
+  .btn-search {
+    background: linear-gradient(135deg, #fe424d, #ff7b54);
     color: #fff;
-    border-radius: 10px;
-    padding: 0 1rem 0 1rem;
+    border-radius: 20px;
+    padding: 0.5rem 1.2rem;
+    transition: all 0.3s ease;
+    border: none;
+    font-weight: 500;
+    box-shadow: 0 2px 5px rgba(254, 66, 77, 0.3);
+  }
+  
+  .btn-search i {
+    display: inline;
+    margin-right: 0.5rem;
+    transition: transform 0.3s ease;
+  }
+  
+  .btn-search:hover {
+    background: linear-gradient(135deg, #ff5a65, #ff8c69);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(254, 66, 77, 0.4);
+  }
+  
+  .btn-search:hover i {
+    transform: scale(1.2) rotate(-5deg);
+  }
+  
+  /* Navbar styling */
+  .navbar {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 0.7rem 1rem;
+  }
+  
+  /* Brand icon styling */
+  .navbar-brand {
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    padding: 0.5rem;
+    border-radius: 50%;
+    overflow: hidden;
+  }
+  
+  .brand-icon {
+    background: linear-gradient(135deg, #fe424d, #ff7b54);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    transition: all 0.3s ease;
+  }
+  
+  .navbar-brand:hover {
+    background-color: rgba(254, 66, 77, 0.1);
+  }
+  
+  .navbar-brand:hover .brand-icon {
+    transform: rotate(45deg) scale(1.2);
+    filter: drop-shadow(0 2px 3px rgba(254, 66, 77, 0.5));
+  }
+  
+  /* Search container styling */
+  .search-container {
+    position: relative;
+    transition: all 0.3s ease;
+    margin-right: 1rem;
+  }
+  
+  .search-input-container {
+    position: relative;
+    margin-right: 0.5rem;
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    transition: all 0.3s ease;
+    z-index: 10;
+  }
+  
+  .search-input {
+    border-radius: 20px;
+    padding-left: 2.5rem;
+    padding-right: 1rem;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+    width: 100%;
+    background-color: #f8f9fa;
+  }
+  
+  .search-container:focus-within .search-input {
+    box-shadow: 0 0 0 3px rgba(254, 66, 77, 0.2);
+    border-color: #fe424d;
+    background-color: white;
+  }
+  
+  .search-container:focus-within .search-icon {
+    color: #fe424d;
+    transform: translateY(-50%) scale(1.1);
+  }
+  
+  /* Explore link styling */
+  .explore-icon {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease, color 0.3s ease;
+    background: linear-gradient(135deg, #fe424d, #ff7b54);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    padding: 0.2rem;
+    border-radius: 4px;
+  }
+  
+  .explore-link {
+    position: relative;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    margin-right: 0.5rem;
+  }
+  
+  .explore-link:hover {
+    background-color: rgba(254, 66, 77, 0.1);
+    transform: translateY(-2px);
+  }
+  
+  .explore-link:hover .explore-icon {
+    transform: scale(1.2) rotate(5deg);
+    filter: drop-shadow(0 2px 3px rgba(254, 66, 77, 0.5));
+  }
+  
+  .explore-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #fe424d, #ff7b54);
+    transition: width 0.3s ease;
+  }
+  
+  .explore-link:hover::after {
+    width: 100%;
   }
  </style>
 <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/listings"><i class="fa-regular fa-compass"></i></a>
+      <a class="navbar-brand" href="/listings"><i class="fa-regular fa-compass brand-icon"></i></a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav">
          
-          <a class="nav-link" href="/listings">Explore</a>
+          <a class="nav-link explore-link" href="/listings"><i class="fa-solid fa-globe explore-icon"></i> Explore</a>
          <div class="navbar-nav ms-auto">
-          <form class="d-flex" role="search" action="/listings/search" method="GET">
-            <input class="form-control me-2" type="search" name="q" placeholder="Search hotels, locations..." aria-label="Search">
+          <form class="d-flex search-container" role="search" action="/listings/search" method="GET">
+            <div class="search-input-container">
+              <i class="fa-solid fa-magnifying-glass search-icon"></i>
+              <input class="form-control search-input" type="search" name="q" placeholder="Search hotels, locations..." aria-label="Search">
+            </div>
             <button class="btn-search" type="submit"><i class="fa-solid fa-magnifying-glass"></i>Search</button>
           </form>
          </div>
           
         </div>
         <div class="navbar-nav ms-auto">
-          <a class="nav-link" href="/listings/new">Airbnb your Home</a>
+          <% if(curruser) { %>
+          <div class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle host-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fa-solid fa-house-user host-icon"></i> Host
+              <% if(locals.userListingsCount && userListingsCount > 0) { %>
+                <span class="notification-badge"><%= userListingsCount %></span>
+              <% } %>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="/listings/new"><i class="fa-solid fa-plus text-success me-2"></i>Add New Listing</a></li>
+              <li>
+                <a class="dropdown-item" href="/listings/my-listings">
+                  <i class="fa-solid fa-list text-primary me-2"></i>My Listings
+                  <% if(locals.userListingsCount && userListingsCount > 0) { %>
+                    <span class="badge bg-primary rounded-pill ms-2"><%= userListingsCount %></span>
+                  <% } %>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <% } else { %>
+          <a class="nav-link airbnb-link glow-btn" href="/listings/new">
+            <i class="fa-solid fa-house-chimney airbnb-icon"></i> Airbnb your Home
+          </a>
+          <% } %>
+          
           <% if(!curruser) { %>
-          <a class="nav-link"  href="/signup"> <b>Signup</b></a>
-          <a class="nav-link" href="/login"> <b>Login</b></a>
-
+          <a class="nav-link signup-link special-btn" href="/signup">
+            <i class="fa-solid fa-user-plus signup-icon"></i> Signup
+          </a>
+          <a class="nav-link login-link pulse-btn" href="/login">
+            <i class="fa-solid fa-right-to-bracket login-icon"></i> Login
+          </a>
           <% } %> <%if(curruser) { %>
-          <a class="nav-link" href="/bookings"><i class="fa-solid fa-calendar-check"></i> My Bookings</a>
-          <a class="nav-link" href="/logout">Logout</a>
+          <a class="nav-link booking-link position-relative" href="/bookings">
+            <i class="fa-solid fa-calendar-check booking-icon"></i> My Bookings
+            <% if(locals.activeBookingsCount && activeBookingsCount > 0) { %>
+              <span class="notification-badge"><%= activeBookingsCount %></span>
+            <% } %>
+          </a>
+          <a class="nav-link" href="/logout"><i class="fa-solid fa-right-from-bracket text-danger"></i> Logout</a>
           <% } %>
         </div>
       </div>

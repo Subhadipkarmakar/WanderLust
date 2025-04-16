@@ -17,11 +17,25 @@
                     
                     <div class="row mb-4">
                         <div class="col-md-4">
-                            <img src="<%= booking.listing.image.url %>" alt="<%= booking.listing.title %>" class="img-fluid rounded">
+                            <% if (booking.listing && booking.listing.image && booking.listing.image.url) { %>
+                                <img src="<%= booking.listing.image.url %>" alt="<%= booking.listing.title %>" class="img-fluid rounded">
+                            <% } else { %>
+                                <div class="bg-secondary rounded d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <i class="fa-solid fa-image text-white fa-3x"></i>
+                                </div>
+                            <% } %>
                         </div>
                         <div class="col-md-8">
-                            <h5><%= booking.listing.title %></h5>
-                            <p><i class="fa-solid fa-location-dot"></i> <%= booking.listing.location %>, <%= booking.listing.country %></p>
+                            <% if (booking.listing) { %>
+                                <h5><%= booking.listing.title %></h5>
+                                <p><i class="fa-solid fa-location-dot"></i> <%= booking.listing.location %>, <%= booking.listing.country %></p>
+                            <% } else { %>
+                                <h5 class="text-muted">Listing no longer available</h5>
+                                <p class="text-danger">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> 
+                                    This property has been removed from our listings
+                                </p>
+                            <% } %>
                             
                             <div class="row mt-4">
                                 <div class="col-md-6">
@@ -34,7 +48,11 @@
                             
                             <p><strong>Guests:</strong> <%= booking.guests %></p>
                             <p><strong>Total Price:</strong> ₹<%= booking.totalPrice %></p>
-                            <p><strong>Booking Status:</strong> <span class="badge bg-success">Confirmed</span></p>
+                            <p><strong>Booking Status:</strong> 
+                                <span class="badge <%= booking.status === 'confirmed' ? 'bg-success' : booking.status === 'cancelled' ? 'bg-danger' : 'bg-warning' %>">
+                                    <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
+                                </span>
+                            </p>
                         </div>
                     </div>
                     

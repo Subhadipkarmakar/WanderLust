@@ -36,9 +36,28 @@
             <label for="location"  class="from-label">Location</label>
             <input name="listing[location]" placeholder="Kolkata" type="text" class="form-control" required>
         </div>
+        
+        <div class="mb-3">
+            <label for="category" class="form-label">Category</label>
+            <select name="listing[category]" class="form-select" required>
+                <option value="">Select a category</option>
+                <option value="Trending">Trending</option>
+                <option value="Rooms">Rooms</option>
+                <option value="Iconic City">Iconic City</option>
+                <option value="Mountain">Mountain</option>
+                <option value="Forest">Forest</option>
+                <option value="Beach">Beach</option>
+                <option value="Arctic">Arctic</option>
+                <option value="Camping">Camping</option>
+                <option value="Farm">Farm</option>
+                <option value="Top City">Top City</option>
+                <option value="Lake">Lake</option>
+                <option value="Golfing">Golfing</option>
+            </select>
+            <div class="invalid-feedback">Please select a category</div>
+        </div>
        
-       
-        <button class="btn btn-dark add-btn mt-3">Add</button>
+        <button class="btn btn-dark add-btn mt-3">Add Listing</button>
         <br><br>
     </form>
 </div>

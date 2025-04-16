@@ -31,9 +31,27 @@
         <input name="listing[location]" value="<%= listing.location %>" type="text" class="form-control" required>
     </div>
     
+    <div class="mb-3">
+        <label for="category" class="form-label">Category</label>
+        <select name="listing[category]" class="form-select" required>
+            <option value="">Select a category</option>
+            <option value="Trending" <%= listing.category === 'Trending' ? 'selected' : '' %>>Trending</option>
+            <option value="Rooms" <%= listing.category === 'Rooms' ? 'selected' : '' %>>Rooms</option>
+            <option value="Iconic City" <%= listing.category === 'Iconic City' ? 'selected' : '' %>>Iconic City</option>
+            <option value="Mountain" <%= listing.category === 'Mountain' ? 'selected' : '' %>>Mountain</option>
+            <option value="Forest" <%= listing.category === 'Forest' ? 'selected' : '' %>>Forest</option>
+            <option value="Beach" <%= listing.category === 'Beach' ? 'selected' : '' %>>Beach</option>
+            <option value="Arctic" <%= listing.category === 'Arctic' ? 'selected' : '' %>>Arctic</option>
+            <option value="Camping" <%= listing.category === 'Camping' ? 'selected' : '' %>>Camping</option>
+            <option value="Farm" <%= listing.category === 'Farm' ? 'selected' : '' %>>Farm</option>
+            <option value="Top City" <%= listing.category === 'Top City' ? 'selected' : '' %>>Top City</option>
+            <option value="Lake" <%= listing.category === 'Lake' ? 'selected' : '' %>>Lake</option>
+            <option value="Golfing" <%= listing.category === 'Golfing' ? 'selected' : '' %>>Golfing</option>
+        </select>
+        <div class="invalid-feedback">Please select a category</div>
+    </div>
    
-   
-    <button class="btn btn-dark edit-btn mt-3">edit</button>
+    <button class="btn btn-dark edit-btn mt-3">Update Listing</button>
 </form>
 </div>
 </div>

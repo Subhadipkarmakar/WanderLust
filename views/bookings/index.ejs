@@ -15,17 +15,33 @@
                         <div class="card">
                             <div class="row g-0">
                                 <div class="col-md-4">
-                                    <img src="<%= booking.listing.image.url %>" class="img-fluid rounded-start h-100" alt="<%= booking.listing.title %>" style="object-fit: cover;">
+                                    <% if (booking.listing && booking.listing.image && booking.listing.image.url) { %>
+                                        <img src="<%= booking.listing.image.url %>" class="img-fluid rounded-start h-100" alt="<%= booking.listing.title %>" style="object-fit: cover;">
+                                    <% } else { %>
+                                        <div class="bg-secondary h-100 d-flex align-items-center justify-content-center rounded-start">
+                                            <i class="fa-solid fa-image text-white fa-3x"></i>
+                                        </div>
+                                    <% } %>
                                 </div>
                                 <div class="col-md-8">
                                     <div class="card-body">
-                                        <h5 class="card-title"><%= booking.listing.title %></h5>
-                                        <p class="card-text">
-                                            <small class="text-muted">
-                                                <i class="fa-solid fa-location-dot"></i> 
-                                                <%= booking.listing.location %>, <%= booking.listing.country %>
-                                            </small>
-                                        </p>
+                                        <% if (booking.listing) { %>
+                                            <h5 class="card-title"><%= booking.listing.title %></h5>
+                                            <p class="card-text">
+                                                <small class="text-muted">
+                                                    <i class="fa-solid fa-location-dot"></i> 
+                                                    <%= booking.listing.location %>, <%= booking.listing.country %>
+                                                </small>
+                                            </p>
+                                        <% } else { %>
+                                            <h5 class="card-title text-muted">Listing no longer available</h5>
+                                            <p class="card-text">
+                                                <small class="text-danger">
+                                                    <i class="fa-solid fa-triangle-exclamation"></i> 
+                                                    This property has been removed
+                                                </small>
+                                            </p>
+                                        <% } %>
                                         
                                         <div class="d-flex justify-content-between mb-2">
                                             <span>Check-in:</span>

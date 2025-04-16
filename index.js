@@ -49,10 +49,36 @@ passport.deserializeUser(User.deserializeUser());
 
 
 // Flash message middleware
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
-    res.locals.curruser=req.user;
+    res.locals.curruser = req.user;
+    
+    // If user is logged in, get active bookings count for navbar badge
+    if (req.user) {
+        try {
+            // Use the session value if it exists, otherwise count from database
+            if (req.session.activeBookingsCount !== undefined) {
+                res.locals.activeBookingsCount = req.session.activeBookingsCount;
+            } else {
+                const bookingsCount = await Booking.countDocuments({ 
+                    user: req.user._id,
+                    status: { $ne: "cancelled" }
+                });
+                res.locals.activeBookingsCount = bookingsCount;
+                req.session.activeBookingsCount = bookingsCount;
+            }
+            
+            // Count user's listings for Host badge
+            const listingsCount = await Listing.countDocuments({ owner: req.user._id });
+            res.locals.userListingsCount = listingsCount;
+        } catch (err) {
+            console.error("Error counting user data:", err);
+            res.locals.activeBookingsCount = 0;
+            res.locals.userListingsCount = 0;
+        }
+    }
+    
     next();
 });
 
@@ -187,7 +213,11 @@ app.post("/bookings", isLoggedin, async (req, res) => {
 app.get("/bookings/:id", isLoggedin, async (req, res) => {
     try {
         const { id } = req.params;
-        const booking = await Booking.findById(id).populate("listing");
+        const booking = await Booking.findById(id).populate({
+            path: "listing",
+            // This makes it so that null listings don't cause an error
+            match: { _id: { $exists: true } }
+        });
         
         if (!booking) {
             req.flash("error", "Booking not found");
@@ -211,8 +241,22 @@ app.get("/bookings/:id", isLoggedin, async (req, res) => {
 // View all user bookings
 app.get("/bookings", isLoggedin, async (req, res) => {
     try {
-        const bookings = await Booking.find({ user: req.user._id }).populate("listing").sort({ createdAt: -1 });
-        res.render("bookings/index", { bookings });
+        // Populate listing but handle the case where listing might be null
+        const bookings = await Booking.find({ user: req.user._id })
+            .populate({
+                path: "listing",
+                // This makes it so that null listings don't cause an error
+                match: { _id: { $exists: true } }
+            })
+            .sort({ createdAt: -1 });
+        
+        // Count active bookings (not cancelled)
+        const activeBookingsCount = bookings.filter(booking => booking.status !== "cancelled").length;
+        
+        // Set the count in the session for the navbar to display
+        req.session.activeBookingsCount = activeBookingsCount;
+        
+        res.render("bookings/index", { bookings, activeBookingsCount });
     } catch (err) {
         console.error("Error fetching bookings:", err);
         req.flash("error", "Failed to load bookings");
@@ -250,28 +294,50 @@ app.post("/bookings/:id/cancel", isLoggedin, async (req, res) => {
 });
 
 
-app.get("/listings/new",isLoggedin, (req, res) => {
+// View user's listings
+app.get("/listings/my-listings", isLoggedin, async (req, res) => {
+    try {
+        // Find all listings where the owner is the current user
+        const userListings = await Listing.find({ owner: req.user._id });
+        
+        // For each listing, count how many bookings it has
+        for (let listing of userListings) {
+            const bookingCount = await Booking.countDocuments({ listing: listing._id });
+            listing.bookings = Array(bookingCount);
+        }
+        
+        res.render("listings/user-listings", { userListings });
+    } catch (err) {
+        console.error("Error fetching user listings:", err);
+        req.flash("error", "Failed to load your listings");
+        res.redirect("/listings");
+    }
+});
 
+app.get("/listings/new",isLoggedin, (req, res) => {
     res.render("listings/new");
 });
 
-app.post("/listings", async (req, res) => {
+app.post("/listings", isLoggedin, async (req, res) => {
     try {
-        const { title, description, country, image, location, price } = req.body.listing;
+        const { title, description, country, image, location, price, category } = req.body.listing;
         const newListing = new Listing({
             title,
             description,
             country,
             image: { url: image },
             location,
-            price
+            price,
+            category,
+            owner: req.user._id
         });
         await newListing.save();
         req.flash("success", "New listing created");
-        res.redirect("/listings");
+        res.redirect("/listings/my-listings");
     } catch (error) {
         console.error(error);
-        res.status(500).send("Error creating listing");
+        req.flash("error", "Error creating listing");
+        res.redirect("/listings/new");
     }
 });
 
@@ -295,30 +361,70 @@ app.get("/listings/:id/edit", isLoggedin,async (req, res) => {
     }
 });
 
-app.put('/listings/:id', async (req, res) => {
+app.put('/listings/:id', isLoggedin, async (req, res) => {
     try {
-        const { title, description, country, image, location, price } = req.body.listing;
+        const { title, description, country, image, location, price, category } = req.body.listing;
+        
+        // Find the listing first to check ownership
+        const listing = await Listing.findById(req.params.id);
+        
+        // Check if the listing exists
+        if (!listing) {
+            req.flash("error", "Listing not found");
+            return res.redirect("/listings/my-listings");
+        }
+        
+        // Check if the current user is the owner of the listing
+        if (listing.owner && !listing.owner.equals(req.user._id)) {
+            req.flash("error", "You don't have permission to edit this listing");
+            return res.redirect("/listings/my-listings");
+        }
+        
+        // Update the listing
         await Listing.findByIdAndUpdate(
             req.params.id,
-            { title, description, country, image: { url: image }, location, price },
+            { title, description, country, image: { url: image }, location, price, category },
             { new: true, runValidators: true }
         );
-        req.flash("success", "Listing updated");
-        res.redirect(`/listings/${req.params.id}`);
+        
+        req.flash("success", "Listing updated successfully");
+        res.redirect(`/listings/my-listings`);
     } catch (error) {
         console.error(error);
-        res.status(500).send("Error updating listing");
+        req.flash("error", "Error updating listing");
+        res.redirect(`/listings/${req.params.id}/edit`);
     }
 });
 
-app.delete("/listings/:id",isLoggedin, async (req, res) => {
+app.delete("/listings/:id", isLoggedin, async (req, res) => {
     try {
+        // Find the listing first to check ownership
+        const listing = await Listing.findById(req.params.id);
+        
+        // Check if the listing exists
+        if (!listing) {
+            req.flash("error", "Listing not found");
+            return res.redirect("/listings/my-listings");
+        }
+        
+        // Check if the current user is the owner of the listing
+        if (listing.owner && !listing.owner.equals(req.user._id)) {
+            req.flash("error", "You don't have permission to delete this listing");
+            return res.redirect("/listings/my-listings");
+        }
+        
+        // Delete the listing
         await Listing.findByIdAndDelete(req.params.id);
-        req.flash("success", "Listing deleted");
-        res.redirect("/listings");
+        
+        // Also delete any bookings associated with this listing
+        await Booking.deleteMany({ listing: req.params.id });
+        
+        req.flash("success", "Listing and associated bookings deleted");
+        res.redirect("/listings/my-listings");
     } catch (error) {
         console.error(error);
-        res.status(500).send("Error deleting listing");
+        req.flash("error", "Error deleting listing");
+        res.redirect("/listings/my-listings");
     }
 });
 

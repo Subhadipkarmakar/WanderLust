@@ -1,24 +1,6 @@
 <% layout("/layouts/boilarplate") %>
 <body>
    <style>
-    #filters{
-      display: flex;
-      flex-wrap: wrap;
-    }
-    .filter{
-      text-align: center;
-      margin-left: 2rem;
-      margin-top: 2rem;
-      cursor: pointer;
-    }
-    .filter:hover {
-      transform: scale(1.05);
-      transition: all 0.2s;
-    }
-    .filter.active {
-      color: #fe424d;
-      border-bottom: 2px solid #fe424d;
-    }
     .category-heading {
       margin-top: 2rem;
       margin-bottom: 1rem;
@@ -33,84 +15,106 @@
       border-radius: 0.5rem;
       margin-top: 1rem;
       cursor: pointer;
+      transition: all 0.3s ease;
     }
     .view-all-btn:hover {
       background-color: #e63b46;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(254, 66, 77, 0.3);
     }
    </style>
-    <div id="filters">
-<div class="filter <%= selectedCategory === 'Trending' ? 'active' : '' %>" onclick="window.location.href='/listings?category=Trending'">
-  <div><i class="fa-solid fa-fire"></i></div>
- <p>
-  Trending
- </p>
-</div>
-<div class="filter <%= selectedCategory === 'Rooms' ? 'active' : '' %>" onclick="window.location.href='/listings?category=Rooms'">
-  <div><i class="fa-solid fa-bed"></i></div>
- <p>
-  Rooms
- </p>
-</div>
-<div class="filter <%= selectedCategory === 'Iconic City' ? 'active' : '' %>" onclick="window.location.href='/listings?category=Iconic City'">
-  <div><i class="fa-solid fa-city"></i></div>
- <p>
-  Iconic City
- </p>
-</div>
-<div class="filter <%= selectedCategory === 'Mountain' ? 'active' : '' %>" onclick="window.location.href='/listings?category=Mountain'">
-  <div><i class="fa-solid fa-mountain-city"></i></div>
- <p>
-  Mountain
- </p>
-</div>
-<div class="filter <%= selectedCategory === 'Forest' ? 'active' : '' %>" onclick="window.location.href='/listings?category=Forest'">
-  <div><i class="fa-solid fa-tree"></i></div>
- <p>
-  Forest
- </p>
-</div>
-<div class="filter <%= selectedCategory === 'Beach' ? 'active' : '' %>" onclick="window.location.href='/listings?category=Beach'">
-  <div><i class="fa-solid fa-umbrella-beach"></i></div>
- <p>
-  Beach
- </p>
-</div>
-<div class="filter <%= selectedCategory === 'Arctic' ? 'active' : '' %>" onclick="window.location.href='/listings?category=Arctic'">
-  <div><i class="fa-solid fa-snowman"></i></div>
- <p>
-  Arctic
- </p>
-</div>
-<div class="filter <%= selectedCategory === 'Camping' ? 'active' : '' %>" onclick="window.location.href='/listings?category=Camping'">
-  <div><i class="fa-solid fa-fire"></i></div>
- <p>
-  Camping
- </p>
-</div>
-<div class="filter <%= selectedCategory === 'Farm' ? 'active' : '' %>" onclick="window.location.href='/listings?category=Farm'">
-  <div><i class="fa-solid fa-cow"></i></div>
- <p>
-  Farm
- </p>
-</div>
-<div class="filter <%= selectedCategory === 'Top City' ? 'active' : '' %>" onclick="window.location.href='/listings?category=Top City'">
-  <div><i class="fa-solid fa-city"></i></div>
- <p>
-  Top City
- </p>
-</div>
-<div class="filter <%= selectedCategory === 'Lake' ? 'active' : '' %>" onclick="window.location.href='/listings?category=Lake'">
-  <div><i class="fa-solid fa-water"></i></div>
- <p>
-  Lake
- </p>
-</div>
-<div class="filter <%= selectedCategory === 'Golfing' ? 'active' : '' %>" onclick="window.location.href='/listings?category=Golfing'">
-  <div><i class="fa-solid fa-golf-ball-tee"></i></div>
- <p>
-  Golfing
- </p>
-</div>
+    <div class="container position-relative">
+        <button id="scroll-left" class="scroll-btn scroll-left">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div id="filters">
+            <div class="filter <%= selectedCategory === 'Trending' ? 'active' : '' %>" data-category="Trending" onclick="window.location.href='/listings?category=Trending'">
+                <div class="icon-container">
+                    <i class="fa-solid fa-fire"></i>
+                </div>
+                <p>Trending</p>
+            </div>
+            
+            <div class="filter <%= selectedCategory === 'Rooms' ? 'active' : '' %>" data-category="Rooms" onclick="window.location.href='/listings?category=Rooms'">
+                <div class="icon-container">
+                    <i class="fa-solid fa-bed"></i>
+                </div>
+                <p>Rooms</p>
+            </div>
+            
+            <div class="filter <%= selectedCategory === 'Iconic City' ? 'active' : '' %>" data-category="Iconic City" onclick="window.location.href='/listings?category=Iconic City'">
+                <div class="icon-container">
+                    <i class="fa-solid fa-landmark"></i>
+                </div>
+                <p>Iconic City</p>
+            </div>
+            
+            <div class="filter <%= selectedCategory === 'Mountain' ? 'active' : '' %>" data-category="Mountain" onclick="window.location.href='/listings?category=Mountain'">
+                <div class="icon-container">
+                    <i class="fa-solid fa-mountain-sun"></i>
+                </div>
+                <p>Mountain</p>
+            </div>
+            
+            <div class="filter <%= selectedCategory === 'Forest' ? 'active' : '' %>" data-category="Forest" onclick="window.location.href='/listings?category=Forest'">
+                <div class="icon-container">
+                    <i class="fa-solid fa-tree"></i>
+                </div>
+                <p>Forest</p>
+            </div>
+            
+            <div class="filter <%= selectedCategory === 'Beach' ? 'active' : '' %>" data-category="Beach" onclick="window.location.href='/listings?category=Beach'">
+                <div class="icon-container">
+                    <i class="fa-solid fa-umbrella-beach"></i>
+                </div>
+                <p>Beach</p>
+            </div>
+            
+            <div class="filter <%= selectedCategory === 'Arctic' ? 'active' : '' %>" data-category="Arctic" onclick="window.location.href='/listings?category=Arctic'">
+                <div class="icon-container">
+                    <i class="fa-solid fa-snowflake"></i>
+                </div>
+                <p>Arctic</p>
+            </div>
+            
+            <div class="filter <%= selectedCategory === 'Camping' ? 'active' : '' %>" data-category="Camping" onclick="window.location.href='/listings?category=Camping'">
+                <div class="icon-container">
+                    <i class="fa-solid fa-campground"></i>
+                </div>
+                <p>Camping</p>
+            </div>
+            
+            <div class="filter <%= selectedCategory === 'Farm' ? 'active' : '' %>" data-category="Farm" onclick="window.location.href='/listings?category=Farm'">
+                <div class="icon-container">
+                    <i class="fa-solid fa-tractor"></i>
+                </div>
+                <p>Farm</p>
+            </div>
+            
+            <div class="filter <%= selectedCategory === 'Top City' ? 'active' : '' %>" data-category="Top City" onclick="window.location.href='/listings?category=Top City'">
+                <div class="icon-container">
+                    <i class="fa-solid fa-building"></i>
+                </div>
+                <p>Top City</p>
+            </div>
+            
+            <div class="filter <%= selectedCategory === 'Lake' ? 'active' : '' %>" data-category="Lake" onclick="window.location.href='/listings?category=Lake'">
+                <div class="icon-container">
+                    <i class="fa-solid fa-water"></i>
+                </div>
+                <p>Lake</p>
+            </div>
+            
+            <div class="filter <%= selectedCategory === 'Golfing' ? 'active' : '' %>" data-category="Golfing" onclick="window.location.href='/listings?category=Golfing'">
+                <div class="icon-container">
+                    <i class="fa-solid fa-golf-ball-tee"></i>
+                </div>
+                <p>Golfing</p>
+            </div>
+        </div>
+        <button id="scroll-right" class="scroll-btn scroll-right">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
     </div>
 
     <% if(selectedCategory) { %>
@@ -121,42 +125,76 @@
     <% } %>
 
     <% if (alllisting.length === 0) { %>
-      <div class="text-center mt-5">
+      <div class="empty-listings">
+        <i class="fa-solid fa-house-circle-xmark"></i>
         <h3>No properties found</h3>
         <% if(selectedCategory) { %>
-          <p>No properties found in the <%= selectedCategory %> category</p>
+          <p>We couldn't find any properties in the <%= selectedCategory %> category. Try exploring other categories or check back later.</p>
         <% } else { %>
-          <p>No properties available at the moment</p>
+          <p>No properties are available at the moment. Please check back later or try a different search.</p>
         <% } %>
+        <a href="/listings" class="browse-btn">Browse All Categories</a>
       </div>
     <% } else { %>
-      <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
+      <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-4">
         <%  for(let listing of alllisting) { %>
-          <a href="/listings/<%= listing._id %>" class="listing-link">
-          <div class="card col listing-card" >
-              <img src="<%= listing.image.url %>" class="card-img-top" alt="listing_image" style="height: 20rem;">
-              <div class="card-img-overlay"></div>
-              <div class="card-body">
-                <p class="card-text">
-                 <b> <%= listing.title %> </b> <br>
-                 <% if (listing.location) { %>
-                   <small><i class="fa-solid fa-location-dot"></i> <%= listing.location %>, <%= listing.country %></small><br>
-                 <% } %>
-                 &#8377; <%= listing.price %>
-                </p>
+          <div class="col mb-4">
+            <a href="/listings/<%= listing._id %>" class="listing-link">
+              <div class="card listing-card">
+                <% if(listing.category) { %>
+                  <div class="listing-category"><%= listing.category %></div>
+                <% } %>
+                <div class="listing-rating">
+                  <i class="fa-solid fa-star"></i> 
+                  <%= Math.floor(Math.random() * 2) + 4 %>.<%= Math.floor(Math.random() * 10) %>
+                </div>
+                <img src="<%= listing.image.url %>" class="card-img-top" alt="<%= listing.title %>">
+                <div class="card-img-overlay"></div>
+                <div class="card-body">
+                  <h5 class="listing-title"><%= listing.title %></h5>
+                  <% if (listing.location) { %>
+                    <div class="listing-location">
+                      <i class="fa-solid fa-location-dot"></i> 
+                      <%= listing.location %>, <%= listing.country %>
+                    </div>
+                  <% } %>
+                  <div class="listing-price">
+                    &#8377; <%= listing.price %> <span>/ night</span>
+                  </div>
+                  <div class="listing-features">
+                    <div class="listing-feature">
+                      <i class="fa-solid fa-bed"></i> 2 Beds
+                    </div>
+                    <div class="listing-feature">
+                      <i class="fa-solid fa-bath"></i> 1 Bath
+                    </div>
+                    <div class="listing-feature">
+                      <i class="fa-solid fa-wifi"></i> Wifi
+                    </div>
+                  </div>
+                </div>
+                <div class="quick-actions">
+                  <div class="action-btn">
+                    <i class="fa-regular fa-heart"></i>
+                  </div>
+                  <div class="action-btn">
+                    <i class="fa-solid fa-share-nodes"></i>
+                  </div>
+                </div>
               </div>
-            </div>
-          </a>
-            <% } %>
+            </a>
+          </div>
+        <% } %>
       </div>
     <% } %>
 
     <% if(selectedCategory) { %>
-      <div class="text-center mt-4 mb-4">
-        <a href="/listings" class="view-all-btn">View All Listings</a>
+      <div class="text-center mt-5 mb-5">
+        <a href="/listings" class="browse-btn">View All Listings</a>
       </div>
     <% } %>
 
+    <script src="/js/categories.js"></script>
 </body>
 
 

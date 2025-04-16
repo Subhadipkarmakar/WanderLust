@@ -1,0 +1,389 @@
+/* Navbar Icon Styling */
+.host-icon, .booking-icon, .airbnb-icon, .signup-icon, .login-icon, .explore-icon, .brand-icon {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease, color 0.3s ease;
+    background: linear-gradient(135deg, #fe424d, #ff7b54);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    padding: 0.2rem;
+    border-radius: 4px;
+}
+
+.host-link, .booking-link, .airbnb-link, .signup-link, .login-link, .explore-link {
+    position: relative;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.host-link:hover, .booking-link:hover, .airbnb-link:hover, .signup-link:hover, .login-link:hover, .explore-link:hover {
+    background-color: rgba(254, 66, 77, 0.1);
+    transform: translateY(-2px);
+}
+
+.host-link:hover .host-icon {
+    transform: scale(1.2) rotate(5deg);
+    filter: drop-shadow(0 2px 3px rgba(254, 66, 77, 0.5));
+}
+
+.booking-link:hover .booking-icon {
+    transform: scale(1.2) rotate(-5deg);
+    filter: drop-shadow(0 2px 3px rgba(254, 66, 77, 0.5));
+}
+
+.airbnb-link:hover .airbnb-icon {
+    transform: scale(1.2) rotate(5deg);
+    filter: drop-shadow(0 2px 3px rgba(254, 66, 77, 0.5));
+}
+
+.signup-link:hover .signup-icon {
+    transform: scale(1.2) rotate(-5deg);
+    filter: drop-shadow(0 2px 3px rgba(254, 66, 77, 0.5));
+}
+
+.login-link:hover .login-icon {
+    transform: scale(1.2) rotate(5deg);
+    filter: drop-shadow(0 2px 3px rgba(254, 66, 77, 0.5));
+}
+
+/* Special styling for signup and login */
+.signup-link, .login-link {
+    margin-left: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.signup-link::before, .login-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        rgba(254, 66, 77, 0), 
+        rgba(254, 66, 77, 0.1), 
+        rgba(254, 66, 77, 0));
+    transition: left 0.7s ease;
+    z-index: -1;
+}
+
+.signup-link:hover::before, .login-link:hover::before {
+    left: 100%;
+}
+
+/* Airbnb your home button special styling */
+.airbnb-link {
+    position: relative;
+    overflow: hidden;
+}
+
+.airbnb-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #fe424d, #ff7b54);
+    transition: width 0.3s ease;
+}
+
+.airbnb-link:hover::after {
+    width: 100%;
+}
+
+/* Special button styling for signup */
+.special-btn {
+    background: linear-gradient(135deg, #fe424d, #ff7b54);
+    color: white !important;
+    border-radius: 20px;
+    padding: 0.5rem 1.2rem !important;
+    box-shadow: 0 2px 5px rgba(254, 66, 77, 0.3);
+    transition: all 0.3s ease;
+}
+
+.special-btn:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 4px 8px rgba(254, 66, 77, 0.4);
+    background: linear-gradient(135deg, #ff5a65, #ff8c69);
+}
+
+.special-btn .signup-icon {
+    color: white !important;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+}
+
+.special-btn:hover .signup-icon {
+    transform: scale(1.2);
+}
+
+/* Pulse button styling for login */
+.pulse-btn {
+    position: relative;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    border-radius: 20px;
+    padding: 0.5rem 1.2rem !important;
+}
+
+.pulse-btn:hover {
+    border-color: #fe424d;
+}
+
+.pulse-btn::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    border-radius: 20px;
+    z-index: -1;
+}
+
+.pulse-btn:hover::after {
+    animation: pulse-border 1.5s ease-out infinite;
+}
+
+@keyframes pulse-border {
+    0% {
+        box-shadow: 0 0 0 0 rgba(254, 66, 77, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(254, 66, 77, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(254, 66, 77, 0);
+    }
+}
+
+/* Glow button styling for Airbnb your Home */
+.glow-btn {
+    position: relative;
+    border-radius: 20px;
+    padding: 0.5rem 1.2rem !important;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(254, 66, 77, 0.3);
+}
+
+.glow-btn:hover {
+    background: rgba(254, 66, 77, 0.05);
+    box-shadow: 0 0 15px rgba(254, 66, 77, 0.5);
+}
+
+.glow-btn::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #fe424d, #ff7b54, #fe424d);
+    border-radius: 22px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.glow-btn:hover::before {
+    opacity: 0.4;
+}
+
+/* Search styling */
+.search-container {
+    position: relative;
+    transition: all 0.3s ease;
+    margin-right: 1rem;
+}
+
+.search-input-container {
+    position: relative;
+    margin-right: 0.5rem;
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.search-input {
+    border-radius: 20px;
+    padding-left: 2.5rem;
+    padding-right: 1rem;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+    width: 100%;
+    background-color: #f8f9fa;
+}
+
+.search-container:focus-within .search-input {
+    box-shadow: 0 0 0 3px rgba(254, 66, 77, 0.2);
+    border-color: #fe424d;
+    background-color: white;
+}
+
+.search-container:focus-within .search-icon {
+    color: #fe424d;
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Search button styling */
+.btn-search {
+    background: linear-gradient(135deg, #fe424d, #ff7b54);
+    color: #fff;
+    border-radius: 20px;
+    padding: 0.5rem 1.2rem;
+    transition: all 0.3s ease;
+    border: none;
+    font-weight: 500;
+    box-shadow: 0 2px 5px rgba(254, 66, 77, 0.3);
+}
+
+.btn-search i {
+    display: inline;
+    margin-right: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.btn-search:hover {
+    background: linear-gradient(135deg, #ff5a65, #ff8c69);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(254, 66, 77, 0.4);
+}
+
+.btn-search:hover i {
+    transform: scale(1.2) rotate(-5deg);
+}
+
+/* Brand icon styling */
+.navbar-brand {
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    padding: 0.5rem;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.navbar-brand:hover {
+    background-color: rgba(254, 66, 77, 0.1);
+}
+
+.navbar-brand:hover .brand-icon {
+    transform: rotate(45deg) scale(1.2);
+    filter: drop-shadow(0 2px 3px rgba(254, 66, 77, 0.5));
+}
+
+/* Explore link styling */
+.explore-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #fe424d, #ff7b54);
+    transition: width 0.3s ease;
+}
+
+.explore-link:hover::after {
+    width: 100%;
+}
+
+.explore-link:hover .explore-icon {
+    transform: scale(1.2) rotate(5deg);
+    filter: drop-shadow(0 2px 3px rgba(254, 66, 77, 0.5));
+}
+
+/* Dropdown styling */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 0.5rem;
+}
+
+.dropdown-item {
+    border-radius: 6px;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(254, 66, 77, 0.1);
+    transform: translateX(5px);
+}
+
+/* Badge for notifications */
+.notification-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #fe424d;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translate(25%, -25%);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: translate(25%, -25%) scale(1);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    70% {
+        transform: translate(25%, -25%) scale(1.1);
+        box-shadow: 0 0 0 4px rgba(254, 66, 77, 0.1);
+    }
+    100% {
+        transform: translate(25%, -25%) scale(1);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+}
+
+/* Animated underline effect */
+.nav-link.active-nav-link {
+    position: relative;
+}
+
+.nav-link.active-nav-link::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #fe424d;
+    transform: scaleX(0);
+    transform-origin: bottom right;
+    transition: transform 0.3s ease-out;
+}
+
+.nav-link.active-nav-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .host-link, .booking-link {
+        padding: 0.5rem;
+    }
+}
