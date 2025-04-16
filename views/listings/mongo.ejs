@@ -1,10 +1,96 @@
 <% layout("/layouts/boilarplate") %>
 <body>
-    <h3>All listings</h3>
-    <!-- <form action="/listings/new" method="get" >
-        <button>Create new listings</button>
-    </form> -->
-    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
+   <style>
+    #filters{
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .filter{
+      text-align: center;
+      margin-left: 2rem;
+      margin-top: 2rem;
+      
+    }
+    .filter :hover{
+      
+      cursor: pointer;
+    }
+   </style>
+    <div id="filters">
+<div class="filter">
+  <div><i class="fa-solid fa-fire"></i></div>
+ <p>
+  Trending
+ </p>
+</div>
+<div class="filter">
+  <div><i class="fa-solid fa-bed"></i></div>
+ <p>
+  Rooms
+ </p>
+</div>
+<div class="filter">
+  <div><i class="fa-solid fa-city"></i></div>
+ <p>
+  Iconic City
+ </p>
+</div>
+<div class="filter">
+  <div><i class="fa-solid fa-mountain-city"></i></div>
+ <p>
+  Mountain
+ </p>
+</div>
+<div class="filter">
+  <div><i class="fa-solid fa-tree"></i></div>
+ <p>
+  Forest
+ </p>
+</div>
+<div class="filter">
+  <div><i class="fa-solid fa-umbrella-beach"></i></div>
+ <p>
+  Beach
+ </p>
+</div>
+<div class="filter">
+  <div><i class="fa-solid fa-snowman"></i></div>
+ <p>
+  Arctic
+ </p>
+</div>
+<div class="filter">
+  <div><i class="fa-solid fa-fire"></i></div>
+ <p>
+  Camping
+ </p>
+</div>
+<div class="filter">
+  <div><i class="fa-solid fa-cow"></i></div>
+ <p>
+  Farm
+ </p>
+</div>
+<div class="filter">
+  <div><i class="fa-solid fa-city"></i></div>
+ <p>
+  Top City
+ </p>
+</div>
+<div class="filter">
+  <div><i class="fa-solid fa-water"></i></div>
+ <p>
+  Lake
+ </p>
+</div>
+<div class="filter">
+  <div><i class="fa-solid fa-golf-ball-tee"></i></div>
+ <p>
+  Golfing
+ </p>
+</div>
+    </div>
+    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
       <%  for(let listing of alllisting) { %>
         <a href="/listings/<%= listing._id %>" class="listing-link">
         <div class="card col listing-card" >
