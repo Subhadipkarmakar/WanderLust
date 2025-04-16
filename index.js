@@ -78,10 +78,18 @@ app.get("/", (req, res) => {
     res.send("Welcome to the Listings app!");
 });
 app.get("/listings", async (req, res) => {
-    const alllisting = await Listing.find({});
-    //console.log(alllisting);
+    const category = req.query.category;
+    let alllisting;
     
-    res.render('listings/mongo', { alllisting });
+    if (category) {
+        // If a category is specified, find listings with that category (limit to 4)
+        alllisting = await Listing.find({ category: category }).limit(4);
+    } else {
+        // If no category is specified, get all listings
+        alllisting = await Listing.find({});
+    }
+    
+    res.render('listings/mongo', { alllisting, selectedCategory: category });
 });
 
 
