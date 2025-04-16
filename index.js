@@ -92,6 +92,39 @@ app.get("/listings", async (req, res) => {
     res.render('listings/mongo', { alllisting, selectedCategory: category });
 });
 
+// Search route
+app.get("/listings/search", async (req, res) => {
+    const { q } = req.query;
+    
+    if (!q || q.trim() === "") {
+        return res.redirect("/listings");
+    }
+    
+    try {
+        // Create a case-insensitive search query for multiple fields
+        const searchQuery = {
+            $or: [
+                { title: { $regex: q, $options: "i" } },
+                { description: { $regex: q, $options: "i" } },
+                { location: { $regex: q, $options: "i" } },
+                { country: { $regex: q, $options: "i" } }
+            ]
+        };
+        
+        const searchResults = await Listing.find(searchQuery);
+        
+        res.render("listings/search-results", { 
+            alllisting: searchResults, 
+            searchQuery: q,
+            resultCount: searchResults.length
+        });
+    } catch (err) {
+        console.error("Search error:", err);
+        req.flash("error", "An error occurred during search");
+        res.redirect("/listings");
+    }
+});
+
 
 app.get("/listings/new",isLoggedin, (req, res) => {
 

@@ -397,7 +397,7 @@ const sampleListings = [
   {
     title: "Luxury Penthouse in Singapore",
     description:
-      "Stay in this ultra-modern penthouse with breathtaking views of Singapore's skyline and Marina Bay.",
+      "Stay in this ultra-modern penthouse with breathtaking views of Singapore's skyline and Marina Bay. This 5-star hotel suite offers premium amenities including a private pool, butler service, and exclusive access to the rooftop restaurant.",
     image: {
       filename: "listingimage",
       url: "https://images.unsplash.com/photo-1565967511849-76a60a516170?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=60",
@@ -405,6 +405,7 @@ const sampleListings = [
     price: 4500,
     location: "Singapore",
     country: "Singapore",
+    category: "Iconic City"
   },
   {
     title: "Charming Vineyard Cottage",
@@ -733,7 +734,7 @@ const sampleListings = [
   {
     title: "Beachfront Bungalow in Tulum",
     description:
-      "Wake up to the sound of waves in this eco-friendly beachfront bungalow on the pristine shores of Tulum.",
+      "Wake up to the sound of waves in this eco-friendly beachfront bungalow on the pristine shores of Tulum. This luxury hotel property features a private beach, spa services, and gourmet dining options. Perfect for a romantic getaway or family vacation.",
     image: {
       filename: "listingimage",
       url: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmVhY2glMjBob3VzZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
@@ -741,6 +742,7 @@ const sampleListings = [
     price: 1800,
     location: "Tulum",
     country: "Mexico",
+    category: "Beach"
   },
   {
     title: "Alpine Retreat in New Zealand",
@@ -901,7 +903,7 @@ const sampleListings = [
   {
     title: "Historic Apartment in Vienna",
     description:
-      "Stay in this elegant apartment in a historic building in the heart of Vienna's cultural district.",
+      "Stay in this elegant apartment in a historic building in the heart of Vienna's cultural district. This boutique hotel apartment offers 5-star amenities with the charm of old Vienna. Walking distance to the Opera House and major museums.",
     image: {
       filename: "listingimage",
       url: "https://images.unsplash.com/photo-1519677100203-a0e668c92439?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
@@ -909,6 +911,7 @@ const sampleListings = [
     price: 1800,
     location: "Vienna",
     country: "Austria",
+    category: "Iconic City"
   },
   {
     title: "Beachfront Villa in the Bahamas",

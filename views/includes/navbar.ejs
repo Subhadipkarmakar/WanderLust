@@ -21,9 +21,9 @@ margin-right: 0.5rem;
          
           <a class="nav-link" href="/listings">Explore</a>
          <div class="navbar-nav ms-auto">
-          <form class="d-flex" role="search">
-            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-            <button class="  btn-search" type="submit"><i class="fa-solid fa-magnifying-glass"></i>Search</button>
+          <form class="d-flex" role="search" action="/listings/search" method="GET">
+            <input class="form-control me-2" type="search" name="q" placeholder="Search hotels, locations..." aria-label="Search">
+            <button class="btn-search" type="submit"><i class="fa-solid fa-magnifying-glass"></i>Search</button>
           </form>
          </div>
           

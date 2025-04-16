@@ -1,0 +1,69 @@
+<% layout("/layouts/boilarplate") %>
+<body>
+   <style>
+    .search-header {
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+    }
+    .search-term {
+      color: #fe424d;
+      font-weight: bold;
+    }
+    .no-results {
+      text-align: center;
+      margin: 3rem 0;
+    }
+    .back-btn {
+      background-color: #fe424d;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .back-btn:hover {
+      background-color: #e63b46;
+      color: white;
+    }
+   </style>
+
+    <div class="search-header">
+      <h2>Search Results for "<span class="search-term"><%= searchQuery %></span>"</h2>
+      <p><%= resultCount %> properties found</p>
+      <a href="/listings" class="back-btn">Back to All Listings</a>
+    </div>
+
+    <% if (resultCount === 0) { %>
+      <div class="no-results">
+        <h3>No properties found matching your search</h3>
+        <p>Try different keywords or browse our categories</p>
+      </div>
+    <% } else { %>
+      <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
+        <% for(let listing of alllisting) { %>
+          <a href="/listings/<%= listing._id %>" class="listing-link">
+            <div class="card col listing-card">
+              <img src="<%= listing.image.url %>" class="card-img-top" alt="listing_image" style="height: 20rem;">
+              <div class="card-img-overlay"></div>
+              <div class="card-body">
+                <p class="card-text">
+                  <b><%= listing.title %></b> <br>
+                  <% if (listing.location) { %>
+                    <small><i class="fa-solid fa-location-dot"></i> <%= listing.location %>, <%= listing.country %></small><br>
+                  <% } %>
+                  &#8377; <%= listing.price %>
+                </p>
+              </div>
+            </div>
+          </a>
+        <% } %>
+      </div>
+    <% } %>
+
+    <div class="text-center mt-4 mb-4">
+      <a href="/listings" class="back-btn">Back to All Listings</a>
+    </div>
+</body>
