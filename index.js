@@ -1,10 +1,16 @@
 require('dotenv/config');
 const express = require("express");
 const mongoose = require('mongoose');
-const initdb = require("./init/mongo");
+
+// Only require and run the database initialization in development mode
+const isDevelopment = process.env.NODE_ENV === 'development';
+if (isDevelopment) {
+  require("./init/mongo");
+}
 const methodOverride = require("method-override");
 const path = require("path");
 const session = require("express-session");
+const MongoStore = require('connect-mongo');
 const flash = require("connect-flash");
 const ejsMate = require("ejs-mate");
 const Listing = require("./models/listing");
@@ -14,10 +20,19 @@ const passport=require("passport");
 const LocalStrategy=require("passport-local");
 const User=require("./models/user.js");
 const { log } = require('console');
-const {isLoggedin, saveRedirectUrl}= require("../Project1/views/Midilware.js");
+const {isLoggedin, saveRedirectUrl}= require("./views/Midilware.js");
 
 const app = express();
-const port = 8080;
+const port = process.env.PORT || 8080;
+
+// MongoDB connection setup
+const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/wonderlust';
+mongoose.connect(mongoUri, {
+    serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
+    socketTimeoutMS: 45000 // Increase socket timeout to 45 seconds
+})
+    .then(() => console.log("Connected to MongoDB"))
+    .catch((error) => console.log("MongoDB connection error:", error));
 
 // Middleware configuration
 app.set("view engine", "ejs");
@@ -27,13 +42,36 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "/public")));
 
-// Configure session middleware for flash messages
+// Configure session middleware with MongoDB storage
 app.use(
     session({
-        secret: "yourSecretKey", // Replace with a strong secret key
+        secret: process.env.SECRET || "yourSecretKey",
         resave: false,
-        saveUninitialized: true,
-        cookie: { secure: false } // Set to true if using HTTPS
+        saveUninitialized: false, // Changed to false for better performance
+        cookie: { 
+            secure: process.env.NODE_ENV === 'production', // Set to true in production
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
+        },
+        store: MongoStore.create({
+            mongoUrl: mongoUri,
+            touchAfter: 24 * 3600, // time period in seconds - update session only once per day
+            crypto: {
+                secret: process.env.SESSION_CRYPTO_SECRET || 'sessioncryptosecret'
+            },
+            ttl: 14 * 24 * 60 * 60, // = 14 days. Default is 14 days
+            autoRemove: 'native', // Default
+            collectionName: 'sessions', // Collection name for sessions
+            stringify: false, // Don't stringify session data (better performance)
+            // Error handling
+            on: {
+                error: function(error) {
+                    console.error('MongoStore session error:', error);
+                },
+                connected: function() {
+                    console.log('MongoStore session connected');
+                }
+            }
+        })
     })
 );
 app.use(flash());
@@ -92,13 +130,7 @@ app.get("/demouser", async (req,res)=>{
     let RegisteredUser= await User.register(fakeuser,"halloworld");
     res.send(RegisteredUser);
 })
-// // MongoDB connection setup
-// mongoose.connect('mongodb://127.0.0.1:27017/listingsDB', {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true,
-// })
-//     .then(() => console.log("Connected to MongoDB"))
-//     .catch((error) => console.log("MongoDB connection error:", error));
+// MongoDB connection already set up at the top of the file
 
 // Routes and handlers
 app.get("/", (req, res) => {
@@ -538,8 +570,32 @@ app.use((error, req, res, next) => {
     res.status(500).send("Something went wrong!");
 });
 
+// Function to clean up expired sessions
+const cleanupExpiredSessions = async () => {
+    try {
+        // Connect to the sessions collection
+        const sessionCollection = mongoose.connection.collection('sessions');
+        
+        // Find and delete expired sessions
+        const now = new Date();
+        const result = await sessionCollection.deleteMany({
+            "expires": { $lt: now }
+        });
+        
+        console.log(`Cleaned up ${result.deletedCount} expired sessions`);
+    } catch (err) {
+        console.error('Error cleaning up sessions:', err);
+    }
+};
+
 app.listen(port, () => {
     console.log(`App is listening on port ${port}`);
+    
+    // Schedule session cleanup to run daily
+    setInterval(cleanupExpiredSessions, 24 * 60 * 60 * 1000); // Run once a day
+    
+    // Also run it once at startup
+    cleanupExpiredSessions();
 });
 
 

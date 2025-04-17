@@ -1,10 +1,15 @@
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const mongoose = require("mongoose");
 const initdata = require("./data.js");
 
-const mongoUri = 'mongodb://127.0.0.1:27017/wonderlust';
+// Use environment variable or fallback to local MongoDB
+const dbURL = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/wonderlust';
 
 const listing = require("../models/listing.js");
-mongoose.connect(mongoUri)
+mongoose.connect(dbURL, {
+  serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
+  socketTimeoutMS: 45000 // Increase socket timeout to 45 seconds
+})
   .then(() => console.log('Connected!'))
   .catch((err) => {
     console.log(err);
