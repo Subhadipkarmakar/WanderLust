@@ -29,7 +29,13 @@ const port = process.env.PORT || 8080;
 const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/wonderlust';
 mongoose.connect(mongoUri, {
     serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
-    socketTimeoutMS: 45000 // Increase socket timeout to 45 seconds
+    socketTimeoutMS: 45000, // Increase socket timeout to 45 seconds
+    family: 4, // Force IPv4
+    maxPoolSize: 10, // Maintain up to 10 socket connections
+    minPoolSize: 5, // Maintain at least 5 socket connections
+    connectTimeoutMS: 30000, // Give up initial connection after 30 seconds
+    retryWrites: true,
+    retryReads: true
 })
     .then(() => console.log("Connected to MongoDB"))
     .catch((error) => console.log("MongoDB connection error:", error));
@@ -62,6 +68,16 @@ app.use(
             autoRemove: 'native', // Default
             collectionName: 'sessions', // Collection name for sessions
             stringify: false, // Don't stringify session data (better performance)
+            mongoOptions: {
+                serverSelectionTimeoutMS: 30000,
+                socketTimeoutMS: 45000,
+                family: 4,
+                maxPoolSize: 10,
+                minPoolSize: 5,
+                connectTimeoutMS: 30000,
+                retryWrites: true,
+                retryReads: true
+            },
             // Error handling
             on: {
                 error: function(error) {
