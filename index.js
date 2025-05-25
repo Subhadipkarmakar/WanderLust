@@ -143,10 +143,10 @@ app.get("/demouser", async (req,res)=>{
 // MongoDB connection already set up at the top of the file
 
 // Routes and handlers
-app.get("/", (req, res) => {
-    res.send("Welcome to the Listings app!");
-});
-app.get("/listings", async (req, res) => {
+// app.get("/", (req, res) => {
+//     res.send("Welcome to the Listings app!");
+// });
+app.get("/", async (req, res) => {
     const category = req.query.category;
     let alllisting;
     
