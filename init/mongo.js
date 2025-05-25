@@ -8,12 +8,7 @@ const dbURL = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/wonderlust';
 const listing = require("../models/listing.js");
 mongoose.connect(dbURL, {
   serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
-  socketTimeoutMS: 45000, // Increase socket timeout to 45 seconds
-  // Add these options for better compatibility across MongoDB versions
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  retryWrites: true,
-  w: 'majority'
+  socketTimeoutMS: 45000 // Increase socket timeout to 45 seconds
 })
   .then(() => console.log('Connected!'))
   .catch((err) => {
