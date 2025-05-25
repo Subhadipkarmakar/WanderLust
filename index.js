@@ -1,6 +1,7 @@
 require('dotenv/config');
 const express = require("express");
 const mongoose = require('mongoose');
+const initializeDatabase = require('./init-db');
 
 // Only require and run the database initialization in development mode
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -31,7 +32,16 @@ mongoose.connect(mongoUri, {
     serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
     socketTimeoutMS: 45000 // Increase socket timeout to 45 seconds
 })
-    .then(() => console.log("Connected to MongoDB"))
+    .then(() => {
+        console.log("Connected to MongoDB");
+        
+        // Initialize database with sample data if INIT_DB is true
+        if (process.env.INIT_DB === 'true') {
+            initializeDatabase()
+                .then(() => console.log('Database initialization completed'))
+                .catch(err => console.error('Database initialization failed:', err));
+        }
+    })
     .catch((error) => console.log("MongoDB connection error:", error));
 
 // Middleware configuration
