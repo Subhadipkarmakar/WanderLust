@@ -2,17 +2,10 @@ require('dotenv/config');
 const express = require("express");
 const mongoose = require('mongoose');
 
-// Only require the database initialization module in development mode
-// but don't run it automatically - it will check INIT_DB env var
+// Only require and run the database initialization in development mode
 const isDevelopment = process.env.NODE_ENV === 'development';
-if (isDevelopment && process.env.INIT_DB === 'true') {
-  console.log("Loading database initialization module...");
-  try {
-    require("./init/mongo");
-  } catch (error) {
-    console.error("Error loading database initialization:", error.message);
-    // Continue execution even if initialization fails
-  }
+if (isDevelopment) {
+  require("./init/mongo");
 }
 const methodOverride = require("method-override");
 const path = require("path");
@@ -35,13 +28,8 @@ const port = process.env.PORT || 8080;
 // MongoDB connection setup
 const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/wonderlust';
 mongoose.connect(mongoUri, {
-    serverSelectionTimeoutMS: 60000, // Increase timeout to 60 seconds
-    socketTimeoutMS: 60000, // Increase socket timeout to 60 seconds
-    connectTimeoutMS: 60000, // Connection timeout
-    maxPoolSize: 10, // Maximum number of connections in the pool
-    minPoolSize: 1, // Minimum number of connections in the pool
-    maxIdleTimeMS: 30000, // How long a connection can remain idle before being removed
-    family: 4 // Use IPv4, skip trying IPv6
+    serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
+    socketTimeoutMS: 45000 // Increase socket timeout to 45 seconds
 })
     .then(() => console.log("Connected to MongoDB"))
     .catch((error) => console.log("MongoDB connection error:", error));
@@ -74,7 +62,6 @@ app.use(
             autoRemove: 'native', // Default
             collectionName: 'sessions', // Collection name for sessions
             stringify: false, // Don't stringify session data (better performance)
-            clientPromise: mongoose.connection.asPromise().then(connection => connection.getClient()),
             // Error handling
             on: {
                 error: function(error) {
