@@ -10,6 +10,9 @@
         if (!form.checkValidity()) {
           event.preventDefault()
           event.stopPropagation()
+        } else {
+          // Form is valid, allow submission
+          console.log('Form is valid, submitting...')
         }
   
         form.classList.add('was-validated')

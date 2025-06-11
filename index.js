@@ -144,6 +144,10 @@ app.get("/demouser", async (req,res)=>{
 
 // Routes and handlers
 // Root route - redirect to listings
+app.get("/", (req, res) => {
+    res.redirect("/listings");
+});
+
 app.get("/listings", async (req, res) => {
     const category = req.query.category;
     let alllisting;
@@ -560,21 +564,35 @@ app.delete("/listings/:id/reviews/:reviewId", async (req, res) => {
    });
 
    app.post("/signup", async (req,res,next)=>{
+    console.log("Signup route hit!");
+    console.log("Request body:", req.body);
+    
     try{
         let {username,email,password}=req.body;
-    const newUser= new User({email,username});
-    const registeredUser=await User.register(newUser,password);
-    console.log(registeredUser);
-    req.logIn(registeredUser,(err)=>{
-        if(err){
-            return next(err);
+        
+        if (!username || !email || !password) {
+            req.flash("error", "All fields are required");
+            return res.redirect("/signup");
         }
-        req.flash("success","welcome to the Wonderlust");
-    res.redirect("/listings");
-    })
-    
+        
+        console.log("Creating user with:", {username, email});
+        const newUser= new User({email,username});
+        const registeredUser=await User.register(newUser,password);
+        console.log("User registered successfully:", registeredUser);
+        
+        req.logIn(registeredUser,(err)=>{
+            if(err){
+                console.log("Login error:", err);
+                return next(err);
+            }
+            console.log("User logged in successfully");
+            req.flash("success","Welcome to Wonderlust!");
+            res.redirect("/listings");
+        })
+        
     }
     catch(e){
+        console.log("Signup error:", e.message);
         req.flash("error", e.message);
         res.redirect("/signup");
     }
@@ -585,12 +603,19 @@ app.delete("/listings/:id/reviews/:reviewId", async (req, res) => {
     res.render("users/login.ejs");
    });
 
-   app.post('/login', saveRedirectUrl,
-    passport.authenticate('local', { failureRedirect: '/login',failureFlash:true, }),
+   app.post('/login', saveRedirectUrl, (req, res, next) => {
+    console.log("Login route hit!");
+    console.log("Request body:", req.body);
+    next();
+   }, passport.authenticate('local', { 
+        failureRedirect: '/login',
+        failureFlash: true,
+        failureMessage: true
+    }),
     async(req, res)=> {
-      req.flash("success","welcome back to the wonderlust");
+      console.log("Login successful for user:", req.user);
+      req.flash("success","Welcome back to Wonderlust!");
       let redirectUrl=res.locals.redirectUrl || "/listings"
-    
       res.redirect(redirectUrl);
     });
 
