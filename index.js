@@ -143,7 +143,8 @@ app.get("/demouser", async (req,res)=>{
 // MongoDB connection already set up at the top of the file
 
 // Routes and handlers
-app.get("/", async (req, res) => {
+// Root route - redirect to listings
+app.get("/listings", async (req, res) => {
     const category = req.query.category;
     let alllisting;
     
@@ -382,21 +383,53 @@ app.post("/listings", isLoggedin, async (req, res) => {
 
 app.get("/listings/:id", async (req, res) => {
     try {
+        // Check if the ID is a valid MongoDB ObjectId
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            req.flash("error", "Invalid listing ID");
+            return res.redirect("/listings");
+        }
+        
         const listing = await Listing.findById(req.params.id).populate("reviews");
+        
+        if (!listing) {
+            req.flash("error", "Listing not found");
+            return res.redirect("/listings");
+        }
+        
         res.render("listings/show", { listing });
     } catch (error) {
         console.error(error);
-        res.status(404).send("Listing not found");
+        req.flash("error", "Listing not found");
+        res.redirect("/listings");
     }
 });
 
-app.get("/listings/:id/edit", isLoggedin,async (req, res) => {
+app.get("/listings/:id/edit", isLoggedin, async (req, res) => {
     try {
+        // Check if the ID is a valid MongoDB ObjectId
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            req.flash("error", "Invalid listing ID");
+            return res.redirect("/listings");
+        }
+        
         const listing = await Listing.findById(req.params.id);
+        
+        if (!listing) {
+            req.flash("error", "Listing not found");
+            return res.redirect("/listings");
+        }
+        
+        // Check if the current user is the owner of the listing
+        if (listing.owner && !listing.owner.equals(req.user._id)) {
+            req.flash("error", "You don't have permission to edit this listing");
+            return res.redirect("/listings");
+        }
+        
         res.render("listings/edit", { listing });
     } catch (error) {
         console.error(error);
-        res.status(404).send("Listing not found");
+        req.flash("error", "Listing not found");
+        res.redirect("/listings");
     }
 });
 
@@ -542,7 +575,7 @@ app.delete("/listings/:id/reviews/:reviewId", async (req, res) => {
     
     }
     catch(e){
-        req.flash("error", e.massage);
+        req.flash("error", e.message);
         res.redirect("/signup");
     }
    });
