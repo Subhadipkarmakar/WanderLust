@@ -26,14 +26,39 @@ const {isLoggedin, saveRedirectUrl}= require("./views/Midilware.js");
 const app = express();
 const port = process.env.PORT || 8080;
 
+// Environment validation
+console.log("Environment check:");
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("PORT:", port);
+console.log("SECRET exists:", !!process.env.SECRET);
+console.log("SESSION_CRYPTO_SECRET exists:", !!process.env.SESSION_CRYPTO_SECRET);
+console.log("MONGO_URI exists:", !!process.env.MONGO_URI);
+
+// Warn about missing environment variables in production
+if (process.env.NODE_ENV === 'production') {
+    if (!process.env.SECRET) {
+        console.warn("WARNING: SECRET environment variable not set in production!");
+    }
+    if (!process.env.SESSION_CRYPTO_SECRET) {
+        console.warn("WARNING: SESSION_CRYPTO_SECRET environment variable not set in production!");
+    }
+    if (!process.env.MONGO_URI) {
+        console.warn("WARNING: MONGO_URI environment variable not set in production!");
+    }
+}
+
 // MongoDB connection setup
 const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/wonderlust';
+console.log("Attempting to connect to MongoDB...");
+console.log("MongoDB URI (masked):", mongoUri.replace(/\/\/.*@/, '//***:***@'));
+
 mongoose.connect(mongoUri, {
     serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
     socketTimeoutMS: 45000 // Increase socket timeout to 45 seconds
 })
     .then(() => {
-        console.log("Connected to MongoDB");
+        console.log("Connected to MongoDB successfully");
+        console.log("Database name:", mongoose.connection.db.databaseName);
         
         // Initialize database with sample data if INIT_DB is true
         if (process.env.INIT_DB === 'true') {
@@ -42,7 +67,23 @@ mongoose.connect(mongoUri, {
                 .catch(err => console.error('Database initialization failed:', err));
         }
     })
-    .catch((error) => console.log("MongoDB connection error:", error));
+    .catch((error) => {
+        console.error("MongoDB connection error:", error);
+        console.error("Connection string format check - should be: mongodb+srv://username:password@cluster.mongodb.net/database");
+    });
+
+// Add connection event listeners
+mongoose.connection.on('connected', () => {
+    console.log('Mongoose connected to MongoDB');
+});
+
+mongoose.connection.on('error', (err) => {
+    console.error('Mongoose connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+    console.log('Mongoose disconnected from MongoDB');
+});
 
 // Middleware configuration
 app.set("view engine", "ejs");
@@ -59,8 +100,10 @@ app.use(
         resave: false,
         saveUninitialized: false, // Changed to false for better performance
         cookie: { 
-            secure: process.env.NODE_ENV === 'production', // Set to true in production
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
+            secure: false, // Set to false for now - HTTPS issues in deployment
+            httpOnly: true, // Prevent XSS attacks
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
+            sameSite: 'lax' // CSRF protection
         },
         store: MongoStore.create({
             mongoUrl: mongoUri,
@@ -139,7 +182,29 @@ app.get("/demouser", async (req,res)=>{
 
     let RegisteredUser= await User.register(fakeuser,"halloworld");
     res.send(RegisteredUser);
-})
+});
+
+// Debug route for testing authentication
+app.get("/debug/auth", (req, res) => {
+    res.json({
+        isAuthenticated: req.isAuthenticated(),
+        user: req.user || null,
+        sessionID: req.sessionID,
+        session: req.session,
+        mongooseConnection: mongoose.connection.readyState, // 0=disconnected, 1=connected, 2=connecting, 3=disconnecting
+        environment: process.env.NODE_ENV
+    });
+});
+
+// Test route for session
+app.get("/debug/session", (req, res) => {
+    req.session.testValue = "Session is working!";
+    res.json({
+        message: "Session test value set",
+        sessionID: req.sessionID,
+        testValue: req.session.testValue
+    });
+});
 // MongoDB connection already set up at the top of the file
 
 // Routes and handlers
@@ -566,12 +631,25 @@ app.delete("/listings/:id/reviews/:reviewId", async (req, res) => {
    app.post("/signup", async (req,res,next)=>{
     console.log("Signup route hit!");
     console.log("Request body:", req.body);
+    console.log("Session ID:", req.sessionID);
     
     try{
         let {username,email,password}=req.body;
         
         if (!username || !email || !password) {
+            console.log("Missing required fields");
             req.flash("error", "All fields are required");
+            return res.redirect("/signup");
+        }
+        
+        // Validate input
+        if (username.length < 3) {
+            req.flash("error", "Username must be at least 3 characters long");
+            return res.redirect("/signup");
+        }
+        
+        if (password.length < 6) {
+            req.flash("error", "Password must be at least 6 characters long");
             return res.redirect("/signup");
         }
         
@@ -582,18 +660,25 @@ app.delete("/listings/:id/reviews/:reviewId", async (req, res) => {
         
         req.logIn(registeredUser,(err)=>{
             if(err){
-                console.log("Login error:", err);
-                return next(err);
+                console.error("Login error after signup:", err);
+                req.flash("error", "Registration successful but login failed. Please try logging in manually.");
+                return res.redirect("/login");
             }
-            console.log("User logged in successfully");
+            console.log("User logged in successfully after signup");
             req.flash("success","Welcome to Wonderlust!");
             res.redirect("/listings");
         })
         
     }
     catch(e){
-        console.log("Signup error:", e.message);
-        req.flash("error", e.message);
+        console.error("Signup error:", e);
+        if (e.name === 'UserExistsError') {
+            req.flash("error", "A user with the given username is already registered");
+        } else if (e.name === 'ValidationError') {
+            req.flash("error", "Please check your input and try again");
+        } else {
+            req.flash("error", "Registration failed. Please try again.");
+        }
         res.redirect("/signup");
     }
    });
@@ -606,6 +691,8 @@ app.delete("/listings/:id/reviews/:reviewId", async (req, res) => {
    app.post('/login', saveRedirectUrl, (req, res, next) => {
     console.log("Login route hit!");
     console.log("Request body:", req.body);
+    console.log("Session ID:", req.sessionID);
+    console.log("Session data:", req.session);
     next();
    }, passport.authenticate('local', { 
         failureRedirect: '/login',
@@ -614,6 +701,7 @@ app.delete("/listings/:id/reviews/:reviewId", async (req, res) => {
     }),
     async(req, res)=> {
       console.log("Login successful for user:", req.user);
+      console.log("Session after login:", req.session);
       req.flash("success","Welcome back to Wonderlust!");
       let redirectUrl=res.locals.redirectUrl || "/listings"
       res.redirect(redirectUrl);
