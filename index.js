@@ -22,6 +22,7 @@ const LocalStrategy=require("passport-local");
 const User=require("./models/user.js");
 const { log } = require('console');
 const {isLoggedin, saveRedirectUrl}= require("./views/Midilware.js");
+const { sendBookingConfirmation, testEmailConnection } = require('./utils/emailService');
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -33,6 +34,8 @@ console.log("PORT:", port);
 console.log("SECRET exists:", !!process.env.SECRET);
 console.log("SESSION_CRYPTO_SECRET exists:", !!process.env.SESSION_CRYPTO_SECRET);
 console.log("MONGO_URI exists:", !!process.env.MONGO_URI);
+console.log("EMAIL_USER exists:", !!process.env.EMAIL_USER);
+console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
 
 // Warn about missing environment variables in production
 if (process.env.NODE_ENV === 'production') {
@@ -45,6 +48,12 @@ if (process.env.NODE_ENV === 'production') {
     if (!process.env.MONGO_URI) {
         console.warn("WARNING: MONGO_URI environment variable not set in production!");
     }
+    if (!process.env.EMAIL_USER) {
+        console.warn("WARNING: EMAIL_USER environment variable not set in production!");
+    }
+    if (!process.env.EMAIL_PASS) {
+        console.warn("WARNING: EMAIL_PASS environment variable not set in production!");
+    }
 }
 
 // MongoDB connection setup
@@ -52,13 +61,34 @@ const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/wonderlust'
 console.log("Attempting to connect to MongoDB...");
 console.log("MongoDB URI (masked):", mongoUri.replace(/\/\/.*@/, '//***:***@'));
 
+// Check if we're using Atlas (cloud) or local MongoDB
+const isAtlasConnection = mongoUri.includes('mongodb+srv://');
+if (isAtlasConnection) {
+    console.log("Using MongoDB Atlas (cloud database)");
+} else {
+    console.log("Using local MongoDB instance");
+}
+
 mongoose.connect(mongoUri, {
     serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
     socketTimeoutMS: 45000 // Increase socket timeout to 45 seconds
 })
     .then(() => {
         console.log("Connected to MongoDB successfully");
-        console.log("Database name:", mongoose.connection.db.databaseName);
+        
+        // Safely access database name
+        try {
+            if (mongoose.connection.db && mongoose.connection.db.databaseName) {
+                console.log("Database name:", mongoose.connection.db.databaseName);
+            } else {
+                console.log("Database name: Not available yet (connection still initializing)");
+            }
+        } catch (err) {
+            console.log("Database name: Could not retrieve (", err.message, ")");
+        }
+        
+        // Test email connection
+        testEmailConnection();
         
         // Initialize database with sample data if INIT_DB is true
         if (process.env.INIT_DB === 'true') {
@@ -75,10 +105,27 @@ mongoose.connect(mongoUri, {
 // Add connection event listeners
 mongoose.connection.on('connected', () => {
     console.log('Mongoose connected to MongoDB');
+    // Try to get database name after connection is established
+    setTimeout(() => {
+        try {
+            if (mongoose.connection.db && mongoose.connection.db.databaseName) {
+                console.log("Connected to database:", mongoose.connection.db.databaseName);
+            }
+        } catch (err) {
+            console.log("Could not retrieve database name:", err.message);
+        }
+    }, 1000);
 });
 
 mongoose.connection.on('error', (err) => {
     console.error('Mongoose connection error:', err);
+    if (err.message.includes('EREFUSED') || err.message.includes('queryTxt')) {
+        console.error('Network connectivity issue detected. Check:');
+        console.error('1. Internet connection');
+        console.error('2. MongoDB Atlas cluster status');
+        console.error('3. Firewall settings');
+        console.error('4. DNS resolution for cluster hostname');
+    }
 });
 
 mongoose.connection.on('disconnected', () => {
@@ -205,6 +252,42 @@ app.get("/debug/session", (req, res) => {
         testValue: req.session.testValue
     });
 });
+
+// Test route for email functionality
+app.get("/debug/email", isLoggedin, async (req, res) => {
+    try {
+        // Create a sample booking for testing
+        const sampleBooking = {
+            listing: {
+                title: "Test Hotel - Beautiful Beachfront Resort",
+                location: "Goa",
+                country: "India"
+            },
+            checkIn: new Date(),
+            checkOut: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+            guests: 2,
+            totalPrice: 5000
+        };
+        
+        const emailResult = await sendBookingConfirmation(
+            req.user.email,
+            req.user.username,
+            sampleBooking
+        );
+        
+        res.json({
+            message: "Test email sent",
+            emailResult: emailResult,
+            userEmail: req.user.email,
+            userName: req.user.username
+        });
+    } catch (error) {
+        res.json({
+            message: "Error sending test email",
+            error: error.message
+        });
+    }
+});
 // MongoDB connection already set up at the top of the file
 
 // Routes and handlers
@@ -309,7 +392,26 @@ app.post("/bookings", isLoggedin, async (req, res) => {
         // Populate listing details for the confirmation page
         const booking = await Booking.findById(newBooking._id).populate("listing");
         
-        req.flash("success", "Booking confirmed successfully!");
+        // Send booking confirmation email
+        try {
+            const emailResult = await sendBookingConfirmation(
+                req.user.email,
+                req.user.username,
+                booking
+            );
+            
+            if (emailResult.success) {
+                console.log('Booking confirmation email sent successfully');
+                req.flash("success", "Booking confirmed successfully! A confirmation email has been sent to your registered email address.");
+            } else {
+                console.error('Failed to send confirmation email:', emailResult.error);
+                req.flash("success", "Booking confirmed successfully! However, we couldn't send the confirmation email. Please check your booking details below.");
+            }
+        } catch (emailError) {
+            console.error('Error sending confirmation email:', emailError);
+            req.flash("success", "Booking confirmed successfully! However, we couldn't send the confirmation email. Please check your booking details below.");
+        }
+        
         res.redirect(`/bookings/${newBooking._id}`);
     } catch (err) {
         console.error("Error creating booking:", err);
